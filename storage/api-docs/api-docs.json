@@ -1,0 +1,584 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Ecommerce API",
+    "version": "1.0.0",
+    "description": "Ecommerce Backend API Documentation"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Local development server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sanctum": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization"
+      }
+    }
+  },
+  "paths": {
+    "/api/register": {
+      "post": {
+        "summary": "Register a new user",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password", "password_confirmation"],
+                "properties": {
+                  "name": {"type": "string", "example": "John Doe"},
+                  "email": {"type": "string", "format": "email", "example": "john@example.com"},
+                  "password": {"type": "string", "format": "password", "example": "password123"},
+                  "password_confirmation": {"type": "string", "format": "password", "example": "password123"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {"type": "object"},
+                    "token": {"type": "string", "example": "1|abcdefghijklmnop"}
+                  }
+                }
+              }
+            }
+          },
+          "422": {"description": "Validation error"}
+        }
+      }
+    },
+    "/api/login": {
+      "post": {
+        "summary": "Login user",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": {"type": "string", "format": "email", "example": "john@example.com"},
+                  "password": {"type": "string", "format": "password", "example": "password123"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "user": {"type": "object"},
+                    "token": {"type": "string", "example": "1|abcdefghijklmnop"}
+                  }
+                }
+              }
+            }
+          },
+          "401": {"description": "Invalid credentials"}
+        }
+      }
+    },
+    "/api/logout": {
+      "post": {
+        "summary": "Logout user",
+        "tags": ["Auth"],
+        "security": [{"sanctum": []}],
+        "responses": {
+          "200": {"description": "Logged out successfully"},
+          "401": {"description": "Unauthenticated"}
+        }
+      }
+    },
+    "/api/user": {
+      "get": {
+        "summary": "Get authenticated user",
+        "tags": ["Auth"],
+        "security": [{"sanctum": []}],
+        "responses": {
+          "200": {
+            "description": "User data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {"type": "integer", "example": 1},
+                    "name": {"type": "string", "example": "John Doe"},
+                    "email": {"type": "string", "format": "email", "example": "john@example.com"},
+                    "is_admin": {"type": "boolean", "example": false}
+                  }
+                }
+              }
+            }
+          },
+          "401": {"description": "Unauthenticated"}
+        }
+      }
+    },
+    "/api/categories": {
+      "get": {
+        "summary": "Get list of categories",
+        "tags": ["Categories"],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {"type": "integer", "example": 1},
+                      "name": {"type": "string", "example": "Electronics"},
+                      "description": {"type": "string", "example": "Electronic devices"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/categories/{id}": {
+      "get": {
+        "summary": "Get category details",
+        "tags": ["Categories"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"}
+          }
+        ],
+        "responses": {
+          "200": {"description": "Successful response"},
+          "404": {"description": "Category not found"}
+        }
+      }
+    },
+    "/api/products": {
+      "get": {
+        "summary": "Get list of products",
+        "tags": ["Products"],
+        "parameters": [
+          {"name": "category_id", "in": "query", "schema": {"type": "integer"}},
+          {"name": "search", "in": "query", "schema": {"type": "string"}},
+          {"name": "min_price", "in": "query", "schema": {"type": "number", "format": "float"}},
+          {"name": "max_price", "in": "query", "schema": {"type": "number", "format": "float"}},
+          {"name": "per_page", "in": "query", "schema": {"type": "integer", "default": 12}}
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {"type": "array"},
+                    "current_page": {"type": "integer"},
+                    "last_page": {"type": "integer"},
+                    "total": {"type": "integer"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/products/{id}": {
+      "get": {
+        "summary": "Get product details",
+        "tags": ["Products"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"}
+          }
+        ],
+        "responses": {
+          "200": {"description": "Successful response"},
+          "404": {"description": "Product not found"}
+        }
+      }
+    },
+    "/api/cart": {
+      "get": {
+        "summary": "Get user's cart items",
+        "tags": ["Cart"],
+        "security": [{"sanctum": []}],
+        "responses": {
+          "200": {"description": "Successful response"},
+          "401": {"description": "Unauthenticated"}
+        }
+      },
+      "post": {
+        "summary": "Add item to cart",
+        "tags": ["Cart"],
+        "security": [{"sanctum": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["product_id", "quantity"],
+                "properties": {
+                  "product_id": {"type": "integer", "example": 1},
+                  "quantity": {"type": "integer", "example": 2}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Item added to cart"},
+          "401": {"description": "Unauthenticated"},
+          "422": {"description": "Validation error"}
+        }
+      }
+    },
+    "/api/cart/{cartItem}": {
+      "put": {
+        "summary": "Update cart item",
+        "tags": ["Cart"],
+        "security": [{"sanctum": []}],
+        "parameters": [
+          {
+            "name": "cartItem",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["quantity"],
+                "properties": {
+                  "quantity": {"type": "integer", "example": 3}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Cart item updated"},
+          "401": {"description": "Unauthenticated"},
+          "403": {"description": "Forbidden"}
+        }
+      },
+      "delete": {
+        "summary": "Remove item from cart",
+        "tags": ["Cart"],
+        "security": [{"sanctum": []}],
+        "parameters": [
+          {
+            "name": "cartItem",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"}
+          }
+        ],
+        "responses": {
+          "200": {"description": "Item removed from cart"},
+          "401": {"description": "Unauthenticated"},
+          "403": {"description": "Forbidden"}
+        }
+      }
+    },
+    "/api/orders": {
+      "get": {
+        "summary": "Get user's orders",
+        "tags": ["Orders"],
+        "security": [{"sanctum": []}],
+        "parameters": [
+          {"name": "status", "in": "query", "schema": {"type": "string"}},
+          {"name": "per_page", "in": "query", "schema": {"type": "integer", "default": 10}}
+        ],
+        "responses": {
+          "200": {"description": "Successful response"},
+          "401": {"description": "Unauthenticated"}
+        }
+      }
+    },
+    "/api/checkout": {
+      "post": {
+        "summary": "Checkout and create order",
+        "tags": ["Orders"],
+        "security": [{"sanctum": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "shipping_method_id": {"type": "integer", "example": 1}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Order created successfully"},
+          "400": {"description": "Cart is empty"},
+          "401": {"description": "Unauthenticated"}
+        }
+      }
+    },
+    "/api/profile": {
+      "get": {
+        "summary": "Get user profile",
+        "tags": ["Profile"],
+        "security": [{"sanctum": []}],
+        "responses": {
+          "200": {"description": "Profile data"},
+          "401": {"description": "Unauthenticated"}
+        }
+      },
+      "put": {
+        "summary": "Update user profile",
+        "tags": ["Profile"],
+        "security": [{"sanctum": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email"],
+                "properties": {
+                  "name": {"type": "string", "example": "John Doe"},
+                  "email": {"type": "string", "format": "email", "example": "john@example.com"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Profile updated"},
+          "401": {"description": "Unauthenticated"},
+          "422": {"description": "Validation error"}
+        }
+      }
+    },
+    "/api/wishlists": {
+      "get": {
+        "summary": "Get user's wishlist",
+        "tags": ["Wishlist"],
+        "security": [{"sanctum": []}],
+        "responses": {
+          "200": {"description": "Successful response"},
+          "401": {"description": "Unauthenticated"}
+        }
+      },
+      "post": {
+        "summary": "Add product to wishlist",
+        "tags": ["Wishlist"],
+        "security": [{"sanctum": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["product_id"],
+                "properties": {
+                  "product_id": {"type": "integer", "example": 1}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Added to wishlist"},
+          "401": {"description": "Unauthenticated"}
+        }
+      }
+    },
+    "/api/products/{product}/reviews": {
+      "get": {
+        "summary": "Get product reviews",
+        "tags": ["Reviews"],
+        "parameters": [
+          {
+            "name": "product",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"}
+          }
+        ],
+        "responses": {
+          "200": {"description": "Successful response"},
+          "404": {"description": "Product not found"}
+        }
+      },
+      "post": {
+        "summary": "Add product review",
+        "tags": ["Reviews"],
+        "security": [{"sanctum": []}],
+        "parameters": [
+          {
+            "name": "product",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["rating"],
+                "properties": {
+                  "rating": {"type": "integer", "example": 5, "minimum": 1, "maximum": 5},
+                  "comment": {"type": "string", "example": "Great product!"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Review added"},
+          "401": {"description": "Unauthenticated"}
+        }
+      }
+    },
+    "/api/coupons/validate": {
+      "post": {
+        "summary": "Validate coupon code",
+        "tags": ["Coupons"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["code"],
+                "properties": {
+                  "code": {"type": "string", "example": "SUMMER2024"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {"description": "Coupon is valid"},
+          "422": {"description": "Coupon is invalid or expired"}
+        }
+      }
+    },
+    "/api/shipping-methods": {
+      "get": {
+        "summary": "Get available shipping methods",
+        "tags": ["Shipping"],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {"type": "integer", "example": 1},
+                      "name": {"type": "string", "example": "Standard Shipping"},
+                      "fee": {"type": "number", "format": "float", "example": 9.99}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/notifications": {
+      "get": {
+        "summary": "Get user notifications",
+        "tags": ["Notifications"],
+        "security": [{"sanctum": []}],
+        "responses": {
+          "200": {"description": "Successful response"},
+          "401": {"description": "Unauthenticated"}
+        }
+      }
+    },
+    "/api/payment/stripe-session": {
+      "post": {
+        "summary": "Create Stripe checkout session",
+        "tags": ["Payments"],
+        "security": [{"sanctum": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["address", "city", "postal_code", "phone"],
+                "properties": {
+                  "address": {"type": "string", "example": "123 Main St"},
+                  "city": {"type": "string", "example": "New York"},
+                  "postal_code": {"type": "string", "example": "10001"},
+                  "phone": {"type": "string", "example": "+1234567890"},
+                  "shipping_method_id": {"type": "integer", "example": 1},
+                  "coupon_code": {"type": "string", "example": "SUMMER2024"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stripe session created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {"type": "string", "example": "https://checkout.stripe.com/..."}
+                  }
+                }
+              }
+            }
+          },
+          "401": {"description": "Unauthenticated"}
+        }
+      }
+    }
+  }
+}
