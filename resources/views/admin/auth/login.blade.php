@@ -49,7 +49,7 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('admin.login') }}" novalidate>
+        <form method="POST" action="{{ route('login') }}" novalidate>
             @csrf
             <div class="mb-3">
                 <label for="email" class="form-label small fw-medium">Email address</label>

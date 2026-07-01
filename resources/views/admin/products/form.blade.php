@@ -22,7 +22,7 @@
             @endif
 
             @if ($product->exists)
-                <form method="POST" action="{{ route('admin.products.adjust-stock', $product) }}" class="row g-2 align-items-end mb-4">
+                <form method="POST" action="{{ route('admin.products.stock', $product) }}" class="row g-2 align-items-end mb-4">
                     @csrf
                     <div class="col-auto">
                         <label for="stock_delta" class="form-label">Quick Stock Adjustment</label>
@@ -53,8 +53,8 @@
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label for="sku" class="form-label">SKU <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('sku') is-invalid @enderror" id="sku" name="sku" value="{{ old('sku', $product->sku) }}" required>
+                            <label for="sku" class="form-label">SKU</label>
+                            <input type="text" class="form-control @error('sku') is-invalid @enderror" id="sku" name="sku" value="{{ old('sku', $product->sku) }}">
                             @error('sku')<div class="invalid-feedback">{{ $message }}</div>@enderror
                         </div>
                     </div>

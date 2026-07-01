@@ -38,7 +38,7 @@
                         <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="return confirm('Delete this user? This cannot be undone.');">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-danger" style="width: auto;">Delete</button>
+                            <button type="submit" name="confirm" value="1" class="btn btn-danger" style="width: auto;">Delete</button>
                         </form>
                     </td>
                 </tr>

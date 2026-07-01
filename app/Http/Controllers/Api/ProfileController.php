@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use OpenApi\Annotations as OA;
 
@@ -166,15 +167,35 @@ class ProfileController extends Controller
         $user = $request->user();
 
         $request->validate([
-            'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:4096'],
+            'avatar' => ['nullable', 'string', 'max:8000000'],
         ]);
 
-        if ($request->hasFile('avatar')) {
+        if ($request->filled('avatar')) {
+            $base64 = $request->input('avatar');
+            $decoded = null;
+
+            if (Str::startsWith($base64, 'data:')) {
+                $decoded = preg_replace('#^data:image/\w+;base64,#i', '', $base64);
+            }
+
+            if (! $decoded) {
+                return response()->json(['message' => 'Invalid avatar image.'], 422);
+            }
+
             if ($user->avatar) {
                 Storage::disk('public')->delete($user->avatar);
             }
 
-            $path = $request->file('avatar')->store('avatars', 'public');
+            $extension = 'jpg';
+            if (preg_match('#^data:image/(\w+);base64,#i', $base64, $matches)) {
+                $extension = strtolower($matches[1]);
+                if (! in_array($extension, ['jpeg', 'jpg', 'png', 'gif', 'webp', 'svg'])) {
+                    $extension = 'jpg';
+                }
+            }
+
+            $path = 'avatars/' . uniqid() . '.' . $extension;
+            Storage::disk('public')->put($path, base64_decode($decoded));
 
             $user->avatar = $path;
             $user->save();
@@ -185,42 +206,6 @@ class ProfileController extends Controller
         return response()->json(['message' => 'No file uploaded'], 422);
     }
 
-    /**
-     * @OA\Put(
-     *     path="/api/change-password",
-     *     summary="Change password",
-     *     tags={"Profile"},
-     *     security={{"sanctum":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"current_password","password","password_confirmation"},
-     *             @OA\Property(property="current_password", type="string", format="password", example="oldpassword"),
-     *             @OA\Property(property="password", type="string", format="password", example="newpassword", minLength=6),
-     *             @OA\Property(property="password_confirmation", type="string", format="password", example="newpassword")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Password changed successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Password changed successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Current password is incorrect"
-     *     ),
-     *     @OA\Response(
-     *         response=401,
-     *         description="Unauthenticated"
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error"
-     *     )
-     * )
-     */
     public function deleteAvatar(Request $request): JsonResponse
     {
         $user = $request->user();

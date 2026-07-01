@@ -71,7 +71,12 @@ class WishlistController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $wishlists = $request->user()->wishlists()->with('product')->get();
+        $user = $request->user('sanctum');
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        $wishlists = $user->wishlists()->with('product')->get();
         return response()->json($wishlists);
     }
 
@@ -106,8 +111,13 @@ class WishlistController extends Controller
             'product_id' => 'required|exists:products,id',
         ]);
 
+        $user = $request->user('sanctum');
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
         $wishlist = Wishlist::firstOrCreate([
-            'user_id' => $request->user()->id,
+            'user_id' => $user->id,
             'product_id' => $request->product_id,
         ]);
 
@@ -141,7 +151,12 @@ class WishlistController extends Controller
      */
     public function destroy(Request $request, Product $product): JsonResponse
     {
-        $request->user()->wishlists()->where('product_id', $product->id)->delete();
+        $user = $request->user('sanctum');
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        $user->wishlists()->where('product_id', $product->id)->delete();
 
         return response()->json(['message' => 'Removed from wishlist']);
     }

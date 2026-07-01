@@ -81,7 +81,7 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.confirm-destroy form').forEach(form => {
+        document.querySelectorAll('form.confirm-destroy').forEach(form => {
             form.addEventListener('submit', (e) => {
                 if (!confirm('Delete this product? This cannot be undone.')) {
                     e.preventDefault();

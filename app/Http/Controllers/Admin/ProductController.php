@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Response;
 use Illuminate\View\View;
 use Illuminate\Support\Str;
@@ -75,6 +76,7 @@ class ProductController extends Controller
             'images.*' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:4096'],
         ]);
 
+        $validated['slug'] = $validated['slug'] ?? '';
         $validated['slug'] = $validated['slug'] ?: Str::slug($validated['name']);
 
         if ($request->hasFile('image')) {
@@ -82,6 +84,8 @@ class ProductController extends Controller
         }
 
         $product = Product::create($validated);
+
+        Cache::flush();
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
@@ -117,7 +121,7 @@ class ProductController extends Controller
             'images.*' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:4096'],
         ]);
 
-        $validated['slug'] = $validated['slug'] ?: Str::slug($validated['name']);
+        $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
 
         if ($request->hasFile('image')) {
             if ($product->image) {
@@ -135,6 +139,8 @@ class ProductController extends Controller
         }
 
         $product->update($validated);
+
+        Cache::flush();
 
         $this->logActivity('updated product: ' . $product->name, $product, ['changes' => $validated]);
 
@@ -173,6 +179,8 @@ class ProductController extends Controller
         }
 
         $product->delete();
+
+        Cache::flush();
 
         $this->logActivity('deleted product: ' . $product->name, $product, ['name' => $product->name, 'id' => $product->getKey()]);
 

@@ -16,45 +16,6 @@ use Stripe\Exception\SignatureVerificationException;
 use Stripe\Stripe;
 use Stripe\Webhook;
 
-/**
- * @OA\Post(
- *     path="/api/payment/stripe-session",
- *     summary="Create Stripe checkout session",
- *     tags={"Payments"},
- *     security={{"sanctum":{}}},
- *     @OA\RequestBody(
- *         required=true,
- *         @OA\JsonContent(
- *             required={"address","city","postal_code","phone"},
- *             @OA\Property(property="address", type="string", example="123 Main St"),
- *             @OA\Property(property="city", type="string", example="New York"),
- *             @OA\Property(property="postal_code", type="string", example="10001"),
- *             @OA\Property(property="phone", type="string", example="+1234567890"),
- *             @OA\Property(property="shipping_method_id", type="integer", nullable=true, example=1),
- *             @OA\Property(property="coupon_code", type="string", nullable=true, example="SUMMER2024")
- *         )
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Stripe session created",
- *         @OA\JsonContent(
- *             @OA\Property(property="url", type="string", example="https://checkout.stripe.com/...")
- *         )
- *     ),
- *     @OA\Response(
- *         response=400,
- *         description="Cart is empty"
- *     ),
- *     @OA\Response(
- *         response=401,
- *         description="Unauthenticated"
- *     ),
- *     @OA\Response(
- *         response=422,
- *         description="Validation error or insufficient stock"
- *     )
- * )
- */
 class PaymentController extends Controller
 {
     /**
@@ -79,6 +40,45 @@ class PaymentController extends Controller
  *         description="Invalid signature"
  *     )
  * )
+     */
+    /**
+     * @OA\Post(
+     *     path="/api/payment/stripe-session",
+     *     summary="Create Stripe checkout session",
+     *     tags={"Payments"},
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"address","city","postal_code","phone"},
+     *             @OA\Property(property="address", type="string", example="123 Main St"),
+     *             @OA\Property(property="city", type="string", example="New York"),
+     *             @OA\Property(property="postal_code", type="string", example="10001"),
+     *             @OA\Property(property="phone", type="string", example="+1234567890"),
+     *             @OA\Property(property="shipping_method_id", type="integer", nullable=true, example=1),
+     *             @OA\Property(property="coupon_code", type="string", nullable=true, example="SUMMER2024")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Stripe session created",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="url", type="string", example="https://checkout.stripe.com/...")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Cart is empty"
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error or insufficient stock"
+     *     )
+     * )
      */
     public function stripeSession(Request $request): JsonResponse
     {

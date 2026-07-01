@@ -35,7 +35,7 @@ use OpenApi\Annotations as OA;
  *         response=200,
  *         description="Successful response",
  *         @OA\JsonContent(
- *             @OA\Property(property="data", type="array", @OA\Items(type="object")),
+ *             @OA\Property(property="data", type="array", items={@OA\Items(type="object")}),
  *             @OA\Property(property="current_page", type="integer"),
  *             @OA\Property(property="last_page", type="integer"),
  *             @OA\Property(property="per_page", type="integer"),
@@ -71,7 +71,7 @@ class OrderController extends Controller
      *             @OA\Property(property="status", type="string", example="pending"),
      *             @OA\Property(property="total", type="number", format="float", example=199.99),
      *             @OA\Property(property="shipping_amount", type="number", format="float", example=10.00),
-     *             @OA\Property(property="items", type="array", @OA\Items(type="object")),
+     *             @OA\Property(property="items", type="array", items={@OA\Items(type="object")}),
      *             @OA\Property(property="shipping_method", type="object")
      *         )
          *     ),
@@ -122,7 +122,7 @@ class OrderController extends Controller
      *             @OA\Property(property="status", type="string", example="pending"),
      *             @OA\Property(property="total", type="number", format="float", example=199.99),
      *             @OA\Property(property="shipping_amount", type="number", format="float", example=10.00),
-     *             @OA\Property(property="items", type="array", @OA\Items(type="object")),
+     *             @OA\Property(property="items", type="array", items={@OA\Items(type="object")}),
      *             @OA\Property(property="shipping_method", type="object")
      *         )
      *     ),

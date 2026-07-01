@@ -65,11 +65,11 @@ class UserController extends Controller
     public function destroy(Request $request, User $user): RedirectResponse
     {
         $request->validate([
-            'confirm_email' => ['required', 'string', 'same:' . $user->email],
+            'confirm' => ['required', 'accepted'],
         ]);
 
         if ($user->id === \Illuminate\Support\Facades\Auth::id()) {
-            return back()->withErrors(['confirm_email' => 'You cannot delete your own account from here.']);
+            return back()->withErrors(['confirm' => 'You cannot delete your own account from here.']);
         }
 
         $user->delete();

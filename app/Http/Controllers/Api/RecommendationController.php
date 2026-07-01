@@ -41,31 +41,6 @@ use OpenApi\Annotations as OA;
  */
 class RecommendationController extends Controller
 {
-    /**
-     * @OA\Get(
- *     path="/api/recommendations",
- *     summary="Get personalized recommendations",
- *     tags={"Recommendations"},
- *     security={{"sanctum":{}}},
- *     @OA\Response(
- *         response=200,
- *         description="Successful response",
- *         @OA\JsonContent(
- *             type="array",
- *             @OA\Items(
- *                 @OA\Property(property="id", type="integer", example=1),
- *                 @OA\Property(property="name", type="string", example="Product Name"),
- *                 @OA\Property(property="price", type="number", format="float", example=99.99),
- *                 @OA\Property(property="category_id", type="integer", example=1)
- *             )
- *         )
- *     ),
- *     @OA\Response(
- *         response=401,
- *         description="Unauthenticated"
- *     )
- * )
-     */
     public function forProduct(Request $request, Product $product): JsonResponse
     {
         $recommendations = Cache::remember("recommendations.product.{$product->id}", now()->addHours(4), function () use ($product) {
