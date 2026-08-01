@@ -49,11 +49,11 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('login') }}" novalidate>
+        <form method="POST" action="{{ route('admin.login.post') }}" novalidate>
             @csrf
             <div class="mb-3">
                 <label for="email" class="form-label small fw-medium">Email address</label>
-                <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="email">
+                <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" placeholder="admin@ecommerce.com">
             </div>
             <div class="mb-4">
                 <label for="password" class="form-label small fw-medium">Password</label>

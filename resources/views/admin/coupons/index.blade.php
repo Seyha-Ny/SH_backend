@@ -53,6 +53,7 @@
                             <form method="POST" action="{{ route('admin.coupons.destroy', $coupon) }}" onsubmit="return confirmDestroy('Delete coupon `{{ $coupon->code }}`? This cannot be undone.');">
                                 @csrf
                                 @method('DELETE')
+                                <input type="hidden" name="confirm_code" value="{{ $coupon->code }}">
                                 <button type="submit" class="btn btn-danger" style="width: auto;">Delete</button>
                             </form>
                         </td>

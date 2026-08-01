@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Coupon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class CouponController extends Controller
@@ -72,7 +73,7 @@ class CouponController extends Controller
     public function destroy(Request $request, Coupon $coupon): RedirectResponse
     {
         $request->validate([
-            'confirm_code' => ['required', 'string', 'same:' . $coupon->code],
+            'confirm_code' => ['required', 'string', Rule::in([$coupon->code])],
         ]);
 
         $coupon->delete();

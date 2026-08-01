@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AddToWishlistRequest;
 use App\Models\Product;
 use App\Models\Wishlist;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Laravel\Sanctum\PersonalAccessToken;
 use OpenApi\Annotations as OA;
 
 /**
@@ -71,7 +73,7 @@ class WishlistController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user('sanctum');
+        $user = self::resolveSanctumUser($request);
         if (! $user) {
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
@@ -105,13 +107,9 @@ class WishlistController extends Controller
      *     )
  * )
      */
-    public function store(Request $request): JsonResponse
+    public function store(AddToWishlistRequest $request): JsonResponse
     {
-        $request->validate([
-            'product_id' => 'required|exists:products,id',
-        ]);
-
-        $user = $request->user('sanctum');
+        $user = self::resolveSanctumUser($request);
         if (! $user) {
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
@@ -151,7 +149,7 @@ class WishlistController extends Controller
      */
     public function destroy(Request $request, Product $product): JsonResponse
     {
-        $user = $request->user('sanctum');
+        $user = self::resolveSanctumUser($request);
         if (! $user) {
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
@@ -159,5 +157,18 @@ class WishlistController extends Controller
         $user->wishlists()->where('product_id', $product->id)->delete();
 
         return response()->json(['message' => 'Removed from wishlist']);
+    }
+
+    protected static function resolveSanctumUser(Request $request): ?\App\Models\User
+    {
+        $token = $request->bearerToken();
+
+        if (! is_string($token)) {
+            return null;
+        }
+
+        $accessToken = PersonalAccessToken::findToken($token);
+
+        return $accessToken?->tokenable;
     }
 }

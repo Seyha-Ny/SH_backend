@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Actions\SocialLoginAction;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -45,13 +48,8 @@ class AuthController extends Controller
      *     )
      * )
      */
-    public function register(Request $request): JsonResponse
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6|confirmed',
-        ]);
 
         $user = User::create([
             'name' => $request->name,
@@ -102,12 +100,8 @@ class AuthController extends Controller
      *     )
      * )
      */
-    public function login(Request $request): JsonResponse
+    public function login(LoginRequest $request): JsonResponse
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
 
         $user = User::where('email', $request->email)->first();
 
@@ -143,7 +137,11 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        $user = $request->user('sanctum');
+
+        if ($user) {
+            $user->currentAccessToken()?->delete();
+        }
 
         return response()->json(['message' => 'Logged out successfully']);
     }
@@ -185,7 +183,24 @@ class AuthController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'is_admin' => (bool) $user->is_admin,
-            'email_verified_at' => optional($user->email_verified_at)?->toIso8601String(),
+            'email_verified_at' => $user->email_verified_at,
+            'role' => $user->role,
         ]);
+    }
+
+    public function socialCallback(Request $request): JsonResponse
+    {
+        try {
+            $data = (new SocialLoginAction())->handle($request);
+
+            return response()->json([
+                'token' => $data['token'],
+                'user' => $data['user'],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
+        }
     }
 }

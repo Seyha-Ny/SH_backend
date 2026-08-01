@@ -3,10 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Exceptions\UnauthenticatedException;
+use App\Http\Requests\AddCartItemRequest;
+use App\Http\Requests\UpdateCartItemRequest;
 use App\Models\CartItem;
-use App\Models\Product;
+use App\Services\CartService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Laravel\Sanctum\PersonalAccessToken;
 use OpenApi\Annotations as OA;
 
 /**
@@ -37,6 +41,10 @@ use OpenApi\Annotations as OA;
  */
 class CartController extends Controller
 {
+    public function __construct(
+        protected CartService $cartService
+    ) {}
+
     /**
      * @OA\Post(
      *     path="/api/cart",
@@ -73,37 +81,29 @@ class CartController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user('sanctum');
+        $user = self::resolveSanctumUser($request);
 
         if (! $user) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+            throw new UnauthenticatedException();
         }
 
-        $cartItems = $user->cartItems()->with('product')->get();
-
-        return response()->json($cartItems);
+        return response()->json(
+            $this->cartService->getUserCart($user)
+        );
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(AddCartItemRequest $request): JsonResponse
     {
-        $user = $request->user('sanctum');
+        $user = self::resolveSanctumUser($request);
 
         if (! $user) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+            throw new UnauthenticatedException();
         }
 
-        $request->validate([
-            'product_id' => ['required', 'integer', 'exists:products,id'],
-            'quantity' => ['required', 'integer', 'min:1'],
-        ]);
-
-        $product = Product::where('id', $request->product_id)
-            ->where('stock', '>', 0)
-            ->firstOrFail();
-
-        $cartItem = CartItem::updateOrCreate(
-            ['user_id' => $user->id, 'product_id' => $product->id],
-            ['quantity' => min((int) $request->quantity, $product->stock)]
+        $cartItem = $this->cartService->addItem(
+            $user,
+            $request->product_id,
+            (int) $request->quantity
         );
 
         return response()->json($cartItem, 201);
@@ -150,25 +150,19 @@ class CartController extends Controller
      *     )
      * )
      */
-    public function update(Request $request, CartItem $cartItem): JsonResponse
+    public function update(UpdateCartItemRequest $request, CartItem $cartItem): JsonResponse
     {
-        $user = $request->user('sanctum');
+        $user = self::resolveSanctumUser($request);
 
-        if (! $user || $cartItem->user_id !== $user->id) {
-            return response()->json(['message' => 'Forbidden'], 403);
+        if (! $user) {
+            throw new UnauthenticatedException();
         }
 
-        $product = $cartItem->product;
-
-        if (! $product || $product->stock <= 0) {
-            return response()->json(['message' => 'Product is out of stock.'], 422);
-        }
-
-        $request->validate([
-            'quantity' => ['required', 'integer', 'min:1', 'max:' . max(1, (int) $product->stock)],
-        ]);
-
-        $cartItem->update(['quantity' => $request->quantity]);
+        $cartItem = $this->cartService->updateItem(
+            $user,
+            $cartItem,
+            (int) $request->quantity
+        );
 
         return response()->json($cartItem);
     }
@@ -204,14 +198,27 @@ class CartController extends Controller
      */
     public function destroy(Request $request, CartItem $cartItem): JsonResponse
     {
-        $user = $request->user('sanctum');
+        $user = self::resolveSanctumUser($request);
 
-        if (! $user || $cartItem->user_id !== $user->id) {
-            return response()->json(['message' => 'Forbidden'], 403);
+        if (! $user) {
+            throw new UnauthenticatedException();
         }
 
-        $cartItem->delete();
+        $this->cartService->removeItem($user, $cartItem);
 
         return response()->json(['message' => 'Item removed from cart']);
+    }
+
+    protected static function resolveSanctumUser(Request $request): ?\App\Models\User
+    {
+        $token = $request->bearerToken();
+
+        if (! is_string($token)) {
+            return null;
+        }
+
+        $accessToken = PersonalAccessToken::findToken($token);
+
+        return $accessToken?->tokenable;
     }
 }

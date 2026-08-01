@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\ProductService;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use OpenApi\Annotations as OA;
 
 /**
@@ -59,37 +59,26 @@ use OpenApi\Annotations as OA;
  */
 class ProductController extends Controller
 {
+    public function __construct(
+        protected ProductService $productService
+    ) {}
+
     public function index(Request $request): JsonResponse
     {
-        $cacheKey = 'products.' . md5($request->fullUrl());
+        return response()->json(
+            $this->productService->listProducts($request)
+        );
+    }
 
-        $products = Cache::remember($cacheKey, now()->addSeconds(30), function () use ($request) {
-            $query = Product::with('category')->latest();
-
-            if ($request->filled('category_id')) {
-                $query->where('category_id', $request->category_id);
-            }
-
-            if ($request->filled('search')) {
-                $search = $request->search;
-                $query->where(function ($q) use ($search) {
-                    $q->where('name', 'like', "%{$search}%")
-                      ->orWhere('description', 'like', "%{$search}%");
-                });
-            }
-
-            if ($request->filled('min_price')) {
-                $query->where('price', '>=', $request->min_price);
-            }
-
-            if ($request->filled('max_price')) {
-                $query->where('price', '<=', $request->max_price);
-            }
-
-            return $query->paginate((int) $request->integer('per_page', 12));
-        });
-
-        return response()->json($products);
+    /**
+     * Get the global min/max price across all products.
+     * Used by the frontend to initialise price-range sliders.
+     */
+    public function priceRange(): JsonResponse
+    {
+        return response()->json(
+            $this->productService->getPriceRange()
+        );
     }
 
     /**
@@ -125,10 +114,8 @@ class ProductController extends Controller
      */
     public function show(Product $product): JsonResponse
     {
-        $product = Cache::remember("products.{$product->id}", now()->addHours(2), function () use ($product) {
-            return $product->load('category', 'reviews.user', 'productImages');
-        });
-
-        return response()->json($product);
+        return response()->json(
+            $this->productService->getProduct($product)
+        );
     }
 }

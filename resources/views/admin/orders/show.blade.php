@@ -73,7 +73,7 @@
             <div class="card">
                 <div class="card-header fw-semibold">Update Status</div>
                 <div class="card-body">
-                    <form method="POST" action="{{ route('admin.orders.update.status', $order) }}">
+                    <form method="POST" action="{{ route('admin.orders.status', $order) }}">
                         @csrf
                         @method('PUT')
                         <div class="mb-2">
@@ -97,7 +97,7 @@
                     @if (session('error'))
                         <div class="alert alert-danger">{{ session('error') }}</div>
                     @endif
-                    <form method="POST" action="{{ route('admin.orders.send-mail', $order) }}">
+                    <form method="POST" action="{{ route('admin.orders.mail', $order) }}">
                         @csrf
                         <div class="mb-2">
                             <label for="subject" class="form-label">Subject</label>

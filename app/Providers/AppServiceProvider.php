@@ -30,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
                 explode(',', env('SANCTUM_STATEFUL_DOMAINS', '')),
                 [$expectedHost],
             ))),
-            'sanctum.guard' => ['sanctum'],
+            'sanctum.guard' => ['web'],
             'auth.guards.sanctum' => [
                 'driver' => 'sanctum',
                 'provider' => 'users',

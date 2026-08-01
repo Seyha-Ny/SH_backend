@@ -51,8 +51,8 @@ class UserController extends Controller
 
         if ($user->is_admin && !empty($validated['role'])) {
             $user->role = $validated['role'];
-        } elseif (!$user->is_admin) {
-            $user->role = null;
+        } elseif ($user->is_admin) {
+            $user->role = $user->role ?: 'admin';
         }
 
         $user->save();

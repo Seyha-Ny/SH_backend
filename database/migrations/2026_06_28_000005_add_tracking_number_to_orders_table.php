@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->string('tracking_number')->nullable()->after('shipping_method_id');
+            $table->string('tracking_number')->nullable()->after('shipping_amount');
         });
     }
 

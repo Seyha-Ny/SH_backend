@@ -55,6 +55,7 @@
                             <form method="POST" action="{{ route('admin.shipping-methods.destroy', $method) }}" onsubmit="return confirmDestroy('Delete shipping method `{{ $method->name }}`? This cannot be undone.');">
                                 @csrf
                                 @method('DELETE')
+                                <input type="hidden" name="confirm_code" value="{{ $method->code }}">
                                 <button type="submit" class="btn btn-danger" style="width: auto;">Delete</button>
                             </form>
                         </td>

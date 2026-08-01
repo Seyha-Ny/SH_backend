@@ -73,6 +73,46 @@ return [
             'replace_placeholders' => true,
         ],
 
+        /*
+        |--------------------------------------------------------------------------
+        | JSON Structured Log Channel (production recommended)
+        |--------------------------------------------------------------------------
+        |
+        | Logs each entry as a single JSON line suitable for ingestion by
+        | log aggregators (Loki, Datadog, ELK, Papertrail, etc.).
+        | Includes request ID, session ID, and extra context.
+        |
+        */
+        'json' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/laravel.json'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'replace_placeholders' => true,
+            'formatter' => Monolog\Formatter\JsonFormatter::class,
+            'formatter_with' => [
+                'batchMode' => Monolog\Formatter\JsonFormatter::BATCH_MODE_JSON,
+                'appendNewline' => true,
+            ],
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | JSON Daily Channel (production — rotates JSON logs daily)
+        |--------------------------------------------------------------------------
+        */
+        'json_daily' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/laravel.json'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => env('LOG_JSON_DAYS', 30),
+            'replace_placeholders' => true,
+            'formatter' => Monolog\Formatter\JsonFormatter::class,
+            'formatter_with' => [
+                'batchMode' => Monolog\Formatter\JsonFormatter::BATCH_MODE_JSON,
+                'appendNewline' => true,
+            ],
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),

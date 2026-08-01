@@ -20,7 +20,9 @@ class CategoryController extends Controller
 
     public function create(): View
     {
-        return view('admin.categories.form');
+        return view('admin.categories.form', [
+            'category' => new Category(),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse

@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateProfileRequest;
+use App\Http\Requests\ChangePasswordRequest;
+use App\Http\Requests\UploadAvatarRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use OpenApi\Annotations as OA;
 
 /**
@@ -76,7 +78,7 @@ class ProfileController extends Controller
      */
     public function show(Request $request): JsonResponse
     {
-        $user = $request->user();
+        $user = $request->user('sanctum');
 
         if (! $user) {
             return response()->json(['message' => 'Unauthenticated.'], 401);
@@ -128,15 +130,13 @@ class ProfileController extends Controller
      *     )
      * )
      */
-    public function update(Request $request): JsonResponse
+    public function update(UpdateProfileRequest $request): JsonResponse
     {
-        $user = $request->user();
+        $user = $request->user('sanctum');
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
-            'telegram_chat_id' => ['nullable', 'string', 'max:255'],
-        ]);
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
 
         $user->update($request->only(['name', 'email', 'telegram_chat_id']));
 
@@ -162,13 +162,13 @@ class ProfileController extends Controller
      *     )
      * )
      */
-    public function uploadAvatar(Request $request): JsonResponse
+    public function uploadAvatar(UploadAvatarRequest $request): JsonResponse
     {
-        $user = $request->user();
+        $user = $request->user('sanctum');
 
-        $request->validate([
-            'avatar' => ['nullable', 'string', 'max:8000000'],
-        ]);
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
 
         if ($request->filled('avatar')) {
             $base64 = $request->input('avatar');
@@ -208,7 +208,11 @@ class ProfileController extends Controller
 
     public function deleteAvatar(Request $request): JsonResponse
     {
-        $user = $request->user();
+        $user = $request->user('sanctum');
+
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
 
         if ($user->avatar) {
             Storage::disk('public')->delete($user->avatar);
@@ -255,17 +259,12 @@ class ProfileController extends Controller
      *     )
      * )
      */
-    public function changePassword(Request $request): JsonResponse
+    public function changePassword(ChangePasswordRequest $request): JsonResponse
     {
-        $request->validate([
-            'current_password' => 'required|string',
-            'password' => 'required|string|min:6|confirmed',
-        ]);
+        $user = $request->user('sanctum');
 
-        $user = $request->user();
-
-        if (!Hash::check($request->current_password, $user->password)) {
-            return response()->json(['message' => 'Current password is incorrect'], 400);
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
         $user->update(['password' => Hash::make($request->password)]);

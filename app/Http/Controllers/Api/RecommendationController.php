@@ -81,10 +81,20 @@ class RecommendationController extends Controller
      */
     public function forUser(Request $request): JsonResponse
     {
-        $userId = $request->user()->id;
+        $user = $request->user('sanctum');
+
+        if (! $user) {
+            return response()->json([]);
+        }
+
+        $userId = $user->id;
 
         $recommendations = Cache::remember("recommendations.user.{$userId}", now()->addHours(6), function () use ($request) {
-            $user = $request->user();
+            $user = $request->user('sanctum');
+
+            if (! $user) {
+                return collect();
+            }
 
             $orderedProductIds = $user->orders()
                 ->with('items.product')

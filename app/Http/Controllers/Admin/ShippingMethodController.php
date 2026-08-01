@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ShippingMethod;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ShippingMethodController extends Controller
@@ -72,7 +73,7 @@ class ShippingMethodController extends Controller
     public function destroy(Request $request, ShippingMethod $method): RedirectResponse
     {
         $request->validate([
-            'confirm_code' => ['required', 'string', 'same:' . $method->code],
+            'confirm_code' => ['required', 'string', Rule::in([$method->code])],
         ]);
 
         $method->delete();

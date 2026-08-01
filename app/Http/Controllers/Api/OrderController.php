@@ -3,14 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Mail\OrderCancellationRequested;
-use App\Mail\OrderReturnRequested;
-use App\Models\CartItem;
+use App\Http\Requests\OrderActionRequest;
 use App\Models\Order;
+use App\Services\OrderService;
+use App\Services\CartService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use OpenApi\Annotations as OA;
 
 /**
@@ -50,6 +48,10 @@ use OpenApi\Annotations as OA;
  */
 class OrderController extends Controller
 {
+    public function __construct(
+        protected OrderService $orderService
+    ) {}
+
     /**
      * @OA\Get(
      *     path="/api/orders/{order}",
@@ -87,18 +89,19 @@ class OrderController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
+        $user = $request->user('sanctum');
 
-        $query = $user->orders()->with('items.product', 'shippingMethod')->orderByDesc('created_at');
-
-        if ($status = $request->query('status')) {
-            $query->where('status', $status);
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        $perPage = (int) ($request->query('per_page', 10));
-        $orders = $query->paginate($perPage);
-
-        return response()->json($orders);
+        return response()->json(
+            $this->orderService->getUserOrders(
+                $user,
+                $request->query('status'),
+                (int) $request->query('per_page', 10)
+            )
+        );
     }
 
     /**
@@ -142,12 +145,15 @@ class OrderController extends Controller
      */
     public function show(Request $request, Order $order): JsonResponse
     {
-        if ($order->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Forbidden'], 403);
+        $user = $request->user('sanctum');
+
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        $order->load('items.product', 'shippingMethod');
-        return response()->json($order);
+        return response()->json(
+            $this->orderService->getOrder($user, $order)
+        );
     }
 
     /**
@@ -181,54 +187,17 @@ class OrderController extends Controller
      */
     public function checkout(Request $request): JsonResponse
     {
-        $request->validate([
-            'shipping_method_id' => ['nullable', 'integer', 'exists:courier_shipping_methods,id'],
-        ]);
+        $user = $request->user('sanctum');
 
-        $cartItems = $request->user()->cartItems()->with('product')->get();
-
-        if ($cartItems->isEmpty()) {
-            return response()->json(['message' => 'Cart is empty'], 400);
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        foreach ($cartItems as $item) {
-            if ($item->product->stock < $item->quantity) {
-                return response()->json([
-                    'message' => 'Insufficient stock for ' . $item->product->name,
-                ], 422);
-            }
-        }
-
-        $selectedShippingMethod = \App\Models\ShippingMethod::find($request->input('shipping_method_id'));
-        $shippingFee = $selectedShippingMethod ? (float) $selectedShippingMethod->fee : 0;
-
-        $order = DB::transaction(function () use ($request, $cartItems, $shippingFee, $selectedShippingMethod) {
-            $order = Order::create([
-                'user_id' => $request->user()->id,
-                'status' => 'pending',
-                'total' => $cartItems->sum(function ($item) {
-                    return $item->product->price * $item->quantity;
-                }) + $shippingFee,
-                'shipping_amount' => $shippingFee,
-                'shipping_method_id' => $selectedShippingMethod?->id,
-            ]);
-
-            foreach ($cartItems as $item) {
-                $order->items()->create([
-                    'product_id' => $item->product_id,
-                    'quantity' => $item->quantity,
-                    'price' => $item->product->price,
-                ]);
-
-                $item->product->decrement('stock', $item->quantity);
-            }
-
-            CartItem::where('user_id', $request->user()->id)->delete();
-
-            return $order;
-        });
-
-        $order->load('items.product', 'shippingMethod');
+        $order = $this->orderService->checkout(
+            $user,
+            $request->input('shipping_method_id'),
+            $request->input('coupon_code')
+        );
 
         return response()->json($order, 201);
     }
@@ -274,7 +243,9 @@ class OrderController extends Controller
      */
     public function invoice(Request $request, Order $order): \Illuminate\Http\Response
     {
-        if ($order->user_id !== $request->user()->id) {
+        $user = $request->user('sanctum');
+
+        if (! $user || $order->user_id !== $user->id) {
             abort(403);
         }
 
@@ -328,31 +299,19 @@ class OrderController extends Controller
      *     )
      * )
      */
-    public function requestCancel(Request $request, Order $order): JsonResponse
+    public function requestCancel(OrderActionRequest $request, Order $order): JsonResponse
     {
-        if ($order->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Forbidden'], 403);
+        $user = $request->user('sanctum');
+
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        $validated = $request->validate([
-            'reason' => 'nullable|string|max:500',
-        ]);
-
-        if (! in_array($order->status, ['pending', 'processing'], true)) {
-            return response()->json(['message' => 'Order cannot be canceled at this stage.'], 422);
-        }
-
-        $order->update([
-            'status' => 'cancellation_requested',
-        ]);
-
-        if ($order->user && filter_var($order->user->email, FILTER_VALIDATE_EMAIL)) {
-            try {
-                Mail::to($order->user->email)->send(new OrderCancellationRequested($order, $validated['reason'] ?? null));
-            } catch (\Throwable $e) {
-                // ignore mail failures
-            }
-        }
+        $this->orderService->requestCancel(
+            $user,
+            $order,
+            $request->input('reason')
+        );
 
         return response()->json(['message' => 'Cancellation request submitted.']);
     }
@@ -396,31 +355,19 @@ class OrderController extends Controller
      *     )
      * )
      */
-    public function requestReturn(Request $request, Order $order): JsonResponse
+    public function requestReturn(OrderActionRequest $request, Order $order): JsonResponse
     {
-        if ($order->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Forbidden'], 403);
+        $user = $request->user('sanctum');
+
+        if (! $user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        $validated = $request->validate([
-            'reason' => 'nullable|string|max:500',
-        ]);
-
-        if (! in_array($order->status, ['completed', 'processing'], true)) {
-            return response()->json(['message' => 'Order is not eligible for return.'], 422);
-        }
-
-        $order->update([
-            'status' => 'return_requested',
-        ]);
-
-        if ($order->user && filter_var($order->user->email, FILTER_VALIDATE_EMAIL)) {
-            try {
-                Mail::to($order->user->email)->send(new OrderReturnRequested($order, $validated['reason'] ?? null));
-            } catch (\Throwable $e) {
-                // ignore mail failures
-            }
-        }
+        $this->orderService->requestReturn(
+            $user,
+            $order,
+            $request->input('reason')
+        );
 
         return response()->json(['message' => 'Return request submitted.']);
     }

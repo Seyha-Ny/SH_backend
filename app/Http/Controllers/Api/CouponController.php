@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Exceptions\CouponExpiredException;
+use App\Http\Requests\ValidateCouponRequest;
 use App\Models\Coupon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -37,21 +39,17 @@ class CouponController extends Controller
  *     )
  * )
      */
-    public function validate(Request $request): JsonResponse
+    public function validate(ValidateCouponRequest $request): JsonResponse
     {
-        $request->validate([
-            'code' => 'required|string',
-        ]);
-
         $code = strtoupper(trim((string) $request->input('code')));
         $coupon = Coupon::where('code', $code)->first();
 
         if (! $coupon || ! $coupon->isActiveNow()) {
-            return response()->json(['valid' => false, 'message' => 'Coupon is invalid or expired.'], 422);
+            throw new CouponExpiredException('Coupon is invalid or expired.');
         }
 
         if ($coupon->max_uses !== null && $coupon->used_count >= $coupon->max_uses) {
-            return response()->json(['valid' => false, 'message' => 'Coupon usage limit reached.'], 422);
+            throw new CouponExpiredException('Coupon usage limit reached.');
         }
 
         return response()->json([

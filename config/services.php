@@ -50,6 +50,15 @@ return [
         'fee' => (float) env('SHIPPING_FEE', 0),
     ],
 
+    'cloudflare' => [
+        'api_token' => env('CLOUDFLARE_API_TOKEN'),
+        'zone_id' => env('CLOUDFLARE_ZONE_ID'),
+    ],
+
+    'cdn' => [
+        'url' => env('CDN_URL'),
+    ],
+
     'tax' => [
         'rate' => (float) env('TAX_RATE', 0),
     ],
