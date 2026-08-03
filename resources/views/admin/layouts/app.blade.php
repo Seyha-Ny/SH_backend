@@ -79,15 +79,13 @@
             width: 248px;
             background: linear-gradient(180deg, #1C1917 0%, #27211C 55%, #2E261F 100%);
             color: rgba(255, 255, 255, .85);
-            overflow-y: auto;
-            overflow-x: hidden;
+            /* The nav is the only scrollable region (it owns overflow-y). */
+            overflow: hidden;
             z-index: 1030;
             display: flex;
             flex-direction: column;
             border-right: 1px solid rgba(255, 255, 255, .06);
             transition: transform .25s ease-in-out;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 255, .15) transparent;
         }
         .sidebar .brand {
             padding: 1.05rem 1.15rem .95rem;
@@ -122,7 +120,15 @@
             padding: .3rem .85rem .6rem;
             align-items: stretch;
             flex: 1;
+            /* Never wrap into a second column (Bootstrap .nav defaults to
+               flex-wrap: wrap) — wrapped items overflow past the sidebar
+               edge, get clipped mid-word, and draw a horizontal scrollbar.
+               The nav scrolls vertically instead, with a slim styled rail. */
+            flex-wrap: nowrap;
             overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, .15) transparent;
         }
         .sidebar .nav .nav-heading {
             font-size: .64rem;
@@ -132,6 +138,9 @@
             color: rgba(255, 255, 255, .4);
             padding: .8rem .85rem .3rem;
             margin-top: .2rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .sidebar .nav a,
         .sidebar .nav .nav-link {
@@ -146,7 +155,14 @@
             font-size: .92rem;
             font-weight: 500;
             border: 1px solid transparent;
+            white-space: nowrap;
             transition: background .15s ease, color .15s ease, transform .15s ease;
+        }
+        .sidebar .nav .nav-label {
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .sidebar .nav a i,
         .sidebar .nav .nav-link i {
@@ -601,11 +617,11 @@
             .sidebar-toggle { display: none; }
         }
         @media (min-width: 992px) and (max-width: 1199.98px) {
-            .sidebar { width: 224px; }
-            .main { margin-left: 224px; padding-left: 1.4rem; padding-right: 1.4rem; }
+            .sidebar { width: 232px; }
+            .main { margin-left: 232px; padding-left: 1.4rem; padding-right: 1.4rem; }
             .brand-mark { width: 34px; height: 34px; font-size: 1rem; }
             .admin-avatar { width: 34px; height: 34px; font-size: .85rem; }
-            .sidebar-toggle { left: 211px; }
+            .sidebar-toggle { left: 219px; }
             [data-sidebar="collapsed"] .sidebar { width: 72px; }
             [data-sidebar="collapsed"] .main { margin-left: 72px; }
             [data-sidebar="collapsed"] .sidebar-toggle { left: 59px; }
