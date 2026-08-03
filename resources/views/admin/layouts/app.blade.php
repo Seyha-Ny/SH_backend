@@ -76,7 +76,7 @@
             top: 0;
             left: 0;
             bottom: 0;
-            width: 264px;
+            width: 248px;
             background: linear-gradient(180deg, #1C1917 0%, #27211C 55%, #2E261F 100%);
             color: rgba(255, 255, 255, .85);
             overflow-y: auto;
@@ -90,12 +90,12 @@
             scrollbar-color: rgba(255, 255, 255, .15) transparent;
         }
         .sidebar .brand {
-            padding: 1.3rem 1.25rem 1.1rem;
+            padding: 1.05rem 1.15rem .95rem;
             display: flex;
             align-items: center;
             gap: .7rem;
             font-weight: 800;
-            font-size: 1.1rem;
+            font-size: 1.08rem;
             letter-spacing: .01em;
             color: #fff;
             border-bottom: 1px solid rgba(255, 255, 255, .07);
@@ -119,24 +119,25 @@
             flex-shrink: 0;
         }
         .sidebar .nav {
-            padding: .4rem .85rem .6rem;
+            padding: .3rem .85rem .6rem;
             align-items: stretch;
             flex: 1;
             overflow-y: auto;
         }
         .sidebar .nav .nav-heading {
-            font-size: .66rem;
+            font-size: .64rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: .24em;
-            color: rgba(255, 255, 255, .42);
-            padding: 1.05rem .85rem .35rem;
-            margin-top: .4rem;
+            color: rgba(255, 255, 255, .4);
+            padding: .8rem .85rem .3rem;
+            margin-top: .2rem;
         }
         .sidebar .nav a,
         .sidebar .nav .nav-link {
+            position: relative;
             color: rgba(255, 255, 255, .78);
-            padding: .55rem .8rem;
+            padding: .5rem .78rem;
             border-radius: .65rem;
             display: flex;
             align-items: center;
@@ -168,12 +169,25 @@
             border-color: rgba(240, 226, 200, .22);
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 6px 18px -8px rgba(0, 0, 0, .6);
         }
+        .sidebar .nav a.active::before,
+        .sidebar .nav .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 1px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 58%;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #F59E0B, #D97706);
+            box-shadow: 0 0 10px rgba(217, 119, 6, .55);
+        }
         .admin-identity {
-            padding: .9rem 1rem;
+            padding: .8rem 1rem;
             display: flex;
             align-items: center;
             gap: .7rem;
-            border-bottom: 1px solid rgba(255, 255, 255, .07);
+            border-top: 1px solid rgba(255, 255, 255, .07);
         }
         .admin-avatar {
             width: 38px;
@@ -188,6 +202,17 @@
             justify-content: center;
             flex-shrink: 0;
             box-shadow: 0 4px 12px -4px rgba(217, 119, 6, .5);
+            position: relative;
+        }
+        .admin-avatar .online-dot {
+            position: absolute;
+            right: 1px;
+            bottom: 1px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #34C77B;
+            border: 2px solid #2E261F;
         }
         .admin-identity .name {
             font-size: .88rem;
@@ -206,7 +231,8 @@
             text-overflow: ellipsis;
         }
         .sidebar .logout {
-            padding: .85rem .85rem 1.1rem;
+            padding: .7rem .85rem 1rem;
+            border-top: 1px solid rgba(255, 255, 255, .07);
         }
 
         /* ───────────────────────── Mobile topbar ───────────────────────── */
@@ -242,7 +268,7 @@
 
         /* ───────────────────────── Main area ───────────────────────── */
         .main {
-            margin-left: 264px;
+            margin-left: 248px;
             padding: 1.75rem 2rem 3.5rem;
             min-height: 100vh;
         }
@@ -480,6 +506,12 @@
             .topbar-mobile { display: flex; }
             .stat-card .value { font-size: 1.7rem; }
         }
+        @media (min-width: 992px) and (max-width: 1199.98px) {
+            .sidebar { width: 224px; }
+            .main { margin-left: 224px; padding-left: 1.4rem; padding-right: 1.4rem; }
+            .brand-mark { width: 34px; height: 34px; font-size: 1rem; }
+            .admin-avatar { width: 34px; height: 34px; font-size: .85rem; }
+        }
         @media (min-width: 992px) {
             .topbar-mobile { display: none !important; }
         }
@@ -655,7 +687,7 @@
 
         @if ($admin)
             <div class="admin-identity">
-                <span class="admin-avatar">{{ $adminInitial }}</span>
+                <span class="admin-avatar">{{ $adminInitial }}<span class="online-dot"></span></span>
                 <span class="min-w-0">
                     <span class="name d-block">{{ $admin->name }}</span>
                     <span class="email d-block">{{ $admin->email }}</span>

@@ -4,7 +4,10 @@
 
 @section('content')
     <div class="page-header">
-        <h1 class="h3 mb-0">Dashboard</h1>
+        <div>
+            <h1 class="h3 mb-0">Dashboard</h1>
+            <div class="page-subtitle">Welcome back, {{ Auth::user()?->name ?: 'Admin' }} · {{ now()->format('l, F j') }}</div>
+        </div>
     </div>
 
     <form method="GET" class="row g-2 align-items-end mb-3">
