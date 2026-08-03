@@ -25,3 +25,11 @@ Thumbs.db
 
 # Local SQLite scratch database
 ecommerce
+
+# Local debug artifacts (never commit these)
+/NUL
+/response.json
+/test_checkout.php
+/test_checkout.sh
+/test_mysql.php
+/scripts/api_flow_test.php
