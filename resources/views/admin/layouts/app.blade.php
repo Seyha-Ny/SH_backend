@@ -690,6 +690,53 @@
         .btn-sm { padding: .38rem .7rem; font-size: .8rem; }
 
         /* ───────────────────────── Forms ───────────────────────── */
+        .section-card .section-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: .7rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: #fff;
+            background: linear-gradient(135deg, var(--zenora-amber), #D97706);
+            box-shadow: 0 5px 14px -6px rgba(217, 119, 6, .55);
+            flex-shrink: 0;
+        }
+        .section-card .section-icon.gold { background: linear-gradient(135deg, #8B6F47, #B08D5F); box-shadow: 0 5px 14px -6px rgba(139, 111, 71, .55); }
+        .section-card .section-icon.green { background: linear-gradient(135deg, #1F6F43, #2F8F5B); box-shadow: 0 5px 14px -6px rgba(47, 143, 91, .55); }
+        .section-card .section-icon.indigo { background: linear-gradient(135deg, #4338CA, #6366F1); box-shadow: 0 5px 14px -6px rgba(99, 102, 241, .55); }
+        @media (min-width: 1200px) {
+            .form-sidebar { position: sticky; top: 1.4rem; }
+        }
+        .img-preview {
+            border: 1px solid var(--zenora-border);
+            border-radius: .8rem;
+            background: var(--zenora-surface-sunken);
+        }
+        .img-preview-thumb {
+            width: 100%;
+            max-height: 240px;
+            object-fit: cover;
+            border-radius: .65rem;
+            display: block;
+        }
+        .gallery-thumb {
+            width: 68px;
+            height: 68px;
+            object-fit: cover;
+            border-radius: .55rem;
+            border: 1px solid var(--zenora-border);
+            box-shadow: 0 3px 10px -4px rgba(28, 25, 23, .2);
+        }
+        .form-hint { font-size: .76rem; color: var(--bs-secondary-color); margin-top: .3rem; }
+        /* Form card bodies are direct .p-3 children too, so reset the header
+           gradient + border that .table-card > .p-3 would otherwise give them. */
+        .table-card.section-card > .p-3:not(.border-bottom) {
+            background: var(--zenora-surface);
+            border-bottom: 0;
+        }
+
         .form-control, .form-select {
             border-color: var(--zenora-input-border);
             border-radius: .6rem;
