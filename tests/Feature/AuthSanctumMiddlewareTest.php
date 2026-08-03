@@ -61,6 +61,13 @@ class AuthSanctumMiddlewareTest extends TestCase
         $this->getJson('/api/cart')->assertUnauthorized();
     }
 
+    public function test_unauthenticated_me_returns_401(): void
+    {
+        $this->getJson('/api/me')
+            ->assertUnauthorized()
+            ->assertJson(['message' => self::UNAUTHENTICATED_MESSAGE]);
+    }
+
     public function test_unauthenticated_add_to_cart_returns_401(): void
     {
         $this->postJson('/api/cart', ['product_id' => 1, 'quantity' => 1])
@@ -106,6 +113,18 @@ class AuthSanctumMiddlewareTest extends TestCase
     // ------------------------------------------------------------------ //
     // Authenticated requests → 200 / 201
     // ------------------------------------------------------------------ //
+
+    public function test_authenticated_me_returns_200(): void
+    {
+        [$user, $token] = $this->makeAuthenticatedUser();
+
+        $this->withToken($token)
+            ->getJson('/api/me')
+            ->assertOk()
+            ->assertJsonPath('id', $user->id)
+            ->assertJsonPath('email', $user->email)
+            ->assertJsonPath('is_admin', false);
+    }
 
     public function test_authenticated_profile_returns_200(): void
     {

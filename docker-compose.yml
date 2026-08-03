@@ -5,8 +5,8 @@ services:
       context: ..
       dockerfile: ecommerce_backend/Dockerfile
       target: backend
-    image: sh_store_backend
-    container_name: sh_store_backend
+    image: zenora_backend
+    container_name: zenora_backend
     restart: unless-stopped
     working_dir: /var/www/html
     volumes:
@@ -21,8 +21,8 @@ services:
       DB_CONNECTION: mysql
       DB_HOST: mysql
       DB_PORT: 3306
-      DB_DATABASE: ${DB_DATABASE:-sh_store}
-      DB_USERNAME: ${DB_USERNAME:-sh_store}
+      DB_DATABASE: ${DB_DATABASE:-zenora}
+      DB_USERNAME: ${DB_USERNAME:-zenora}
       DB_PASSWORD: ${DB_PASSWORD:-secret}
       REDIS_HOST: redis
       REDIS_PASSWORD: ${REDIS_PASSWORD:-null}
@@ -40,7 +40,7 @@ services:
       redis:
         condition: service_started
     networks:
-      - sh_store_network
+      - zenora_network
 
   # ---------- Nginx ----------
   nginx:
@@ -48,8 +48,8 @@ services:
       context: ..
       dockerfile: ecommerce_backend/Dockerfile
       target: nginx
-    image: sh_store_nginx
-    container_name: sh_store_nginx
+    image: zenora_nginx
+    container_name: zenora_nginx
     restart: unless-stopped
     ports:
       - "${NGINX_PORT:-80}:80"
@@ -61,18 +61,18 @@ services:
     depends_on:
       - backend
     networks:
-      - sh_store_network
+      - zenora_network
 
   # ---------- MySQL ----------
   mysql:
     image: mysql:8.4
-    container_name: sh_store_mysql
+    container_name: zenora_mysql
     restart: unless-stopped
     ports:
       - "${DB_PORT:-3306}:3306"
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-sh_store}
-      MYSQL_USER: ${DB_USERNAME:-sh_store}
+      MYSQL_DATABASE: ${DB_DATABASE:-zenora}
+      MYSQL_USER: ${DB_USERNAME:-zenora}
       MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_secret}
     volumes:
@@ -84,12 +84,12 @@ services:
       retries: 10
       start_period: 30s
     networks:
-      - sh_store_network
+      - zenora_network
 
   # ---------- Redis ----------
   redis:
     image: redis:7.4-alpine
-    container_name: sh_store_redis
+    container_name: zenora_redis
     restart: unless-stopped
     ports:
       - "${REDIS_PORT:-6379}:6379"
@@ -102,7 +102,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - sh_store_network
+      - zenora_network
 
 volumes:
   mysql_data:
@@ -113,5 +113,5 @@ volumes:
     driver: local
 
 networks:
-  sh_store_network:
+  zenora_network:
     driver: bridge

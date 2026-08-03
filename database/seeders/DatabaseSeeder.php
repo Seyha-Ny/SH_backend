@@ -10,7 +10,11 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             AdminUserSeeder::class,
+            // Canonical categories first — ProductSeeder builds its demo
+            // products from CategorySeeder::CATEGORIES.
+            CategorySeeder::class,
             ProductSeeder::class,
+            ShippingMethodSeeder::class,
         ]);
     }
 }

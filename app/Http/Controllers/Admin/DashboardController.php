@@ -14,8 +14,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
@@ -235,10 +233,7 @@ class DashboardController extends Controller
 
     private function notifyLowStockTelegram($lowStockProducts): void
     {
-        $token = config('services.telegram.bot_token');
-        $adminChatId = config('services.telegram.chat_id');
-
-        if (! $token || ! $adminChatId || $lowStockProducts->isEmpty()) {
+        if (! config('services.telegram.bot_token') || $lowStockProducts->isEmpty()) {
             return;
         }
 
@@ -254,15 +249,12 @@ class DashboardController extends Controller
 
         $text = implode(PHP_EOL, $lines);
 
-        try {
-            Http::timeout(10)->post("https://api.telegram.org/bot{$token}/sendMessage", [
-                'chat_id' => (string) $adminChatId,
-                'text' => $text,
-            ]);
+        $sent = app(\App\Services\TelegramService::class)->sendToAdminChat($text);
 
+        // Only suppress repeats when the alert actually reached Telegram;
+        // otherwise retry on the next dashboard visit.
+        if ($sent) {
             Cache::put($cacheKey, true, now()->addHours(6));
-        } catch (\Throwable $e) {
-            Log::warning('Low stock Telegram alert failed.', ['error' => $e->getMessage()]);
         }
     }
 }

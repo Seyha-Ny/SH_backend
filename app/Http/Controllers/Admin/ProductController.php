@@ -160,6 +160,10 @@ class ProductController extends Controller
             'stock' => $newStock,
         ]);
 
+        // Stock is shown on the storefront (product detail + list grid), so bust
+        // the cache to ensure the change is visible immediately from the DB.
+        Cache::flush();
+
         $this->logActivity('adjusted stock for product: ' . $product->name, $product, [
             'delta' => $delta,
             'new_stock' => $newStock,

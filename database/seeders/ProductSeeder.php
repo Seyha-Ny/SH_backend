@@ -11,14 +11,20 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        $categories = ['Electronics', 'Fashion', 'Home & Living', 'Sports', 'Books'];
+        // Build demo products for the canonical categories from CategorySeeder
+        // so both seeders stay in sync and never create overlapping sets.
+        foreach (CategorySeeder::CATEGORIES as $categoryDef) {
+            $categoryName = $categoryDef['name'];
 
-        foreach ($categories as $categoryName) {
-            $category = Category::create([
-                'name' => $categoryName,
-                'slug' => Str::slug($categoryName),
-                'description' => 'Shop the best ' . $categoryName . ' products.',
-            ]);
+            // firstOrCreate on the canonical slug keeps re-seeding idempotent:
+            // existing categories (and their products below) are never
+            // duplicated or overwritten. Using the canonical slug (not a
+            // re-derived one) keeps CategorySeeder as the single source of
+            // truth.
+            $category = Category::firstOrCreate(
+                ['slug' => $categoryDef['slug']],
+                $categoryDef
+            );
 
             $products = [
                 ['Premium ' . $categoryName . ' A', 49.99, 100],
@@ -29,14 +35,16 @@ class ProductSeeder extends Seeder
             ];
 
             foreach ($products as $product) {
-                Product::create([
-                    'category_id' => $category->id,
-                    'name' => $product[0],
-                    'slug' => Str::slug($product[0]),
-                    'description' => 'High-quality ' . strtolower($product[0]) . ' with excellent reviews.',
-                    'price' => $product[1],
-                    'stock' => $product[2],
-                ]);
+                Product::firstOrCreate(
+                    ['slug' => Str::slug($product[0])],
+                    [
+                        'category_id' => $category->id,
+                        'name' => $product[0],
+                        'description' => 'High-quality ' . strtolower($product[0]) . ' with excellent reviews.',
+                        'price' => $product[1],
+                        'stock' => $product[2],
+                    ]
+                );
             }
         }
     }

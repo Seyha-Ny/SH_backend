@@ -202,6 +202,56 @@ class AdminCrudRoutesTest extends TestCase
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
     }
 
+    /**
+     * After an admin adds a product, the public storefront API must return it
+     * immediately (cache flushed → data re-read from the database).
+     */
+    public function test_admin_product_create_is_immediately_visible_in_public_api(): void
+    {
+        $this->actingAs($this->makeAdmin());
+        $category = $this->makeCategory();
+
+        // Prime the public products cache as a visitor would
+        $this->getJson('/api/products')->assertOk();
+
+        // Admin creates a new product
+        $this->post('/admin/products', [
+            'name' => 'Fresh From DB',
+            'price' => 24.99,
+            'stock' => 3,
+            'category_id' => $category->id,
+        ])->assertRedirect('/admin/products');
+
+        // The storefront must see it right away — not stale cached data
+        $response = $this->getJson('/api/products');
+        $response->assertOk();
+
+        $names = collect($response->json('data'))->pluck('name');
+        $this->assertTrue($names->contains('Fresh From DB'), 'Newly added product missing from public API');
+    }
+
+    /**
+     * Admin stock adjustments must be reflected on the storefront product
+     * detail endpoint immediately (cache busted on change).
+     */
+    public function test_admin_stock_adjustment_is_immediately_visible_in_public_api(): void
+    {
+        $this->actingAs($this->makeAdmin());
+        $product = $this->makeProduct(); // stock 10
+
+        // Prime the product detail cache as a visitor would
+        $this->getJson("/api/products/{$product->id}")->assertOk();
+
+        // Admin adjusts stock 10 → 6
+        $this->post("/admin/products/{$product->id}/stock", ['stock_delta' => -4])
+            ->assertStatus(302);
+
+        // Detail endpoint must reflect the new stock from the DB
+        $this->getJson("/api/products/{$product->id}")
+            ->assertOk()
+            ->assertJsonPath('stock', 6);
+    }
+
     // ------------------------------------------------------------------ //
     // Categories
     // ------------------------------------------------------------------ //

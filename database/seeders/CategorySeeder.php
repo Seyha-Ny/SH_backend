@@ -7,18 +7,25 @@ use Illuminate\Database\Seeder;
 
 class CategorySeeder extends Seeder
 {
+    /**
+     * Canonical storefront categories. This is the single source of truth —
+     * ProductSeeder builds its demo products from the same list, so the two
+     * seeders can never drift apart again.
+     */
+    public const CATEGORIES = [
+        ['name' => 'Electronics', 'slug' => 'electronics', 'description' => 'Electronic devices and accessories'],
+        ['name' => 'Fashion', 'slug' => 'fashion', 'description' => 'Fashion and apparel'],
+        ['name' => 'Home & Living', 'slug' => 'home-living', 'description' => 'Home improvement and living essentials'],
+        ['name' => 'Sports', 'slug' => 'sports', 'description' => 'Sports equipment and gear'],
+        ['name' => 'Books', 'slug' => 'books', 'description' => 'Books and magazines'],
+    ];
+
     public function run(): void
     {
-        $categories = [
-            ['name' => 'Electronics', 'slug' => 'electronics', 'description' => 'Electronic devices and accessories'],
-            ['name' => 'Clothing', 'slug' => 'clothing', 'description' => 'Fashion and apparel'],
-            ['name' => 'Books', 'slug' => 'books', 'description' => 'Books and magazines'],
-            ['name' => 'Home & Garden', 'slug' => 'home-garden', 'description' => 'Home improvement and garden supplies'],
-            ['name' => 'Sports', 'slug' => 'sports', 'description' => 'Sports equipment and gear'],
-        ];
-
-        foreach ($categories as $category) {
-            Category::create($category);
+        foreach (self::CATEGORIES as $category) {
+            // firstOrCreate on the unique slug keeps re-seeding idempotent:
+            // existing categories are never duplicated.
+            Category::firstOrCreate(['slug' => $category['slug']], $category);
         }
     }
 }

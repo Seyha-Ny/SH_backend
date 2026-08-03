@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Events\OrderStatusChanged;
 use App\Exceptions\PaymentFailedException;
 use App\Models\Order;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Stripe\Checkout\Session;
 use Stripe\Exception\SignatureVerificationException;
@@ -150,27 +149,14 @@ class PaymentService
      */
     public function sendTelegramNotification(Order $order, string $paymentStatus): void
     {
-        $token = config('services.telegram.bot_token');
-        $adminChatId = config('services.telegram.chat_id');
-        $customerChatId = $order->user?->telegram_chat_id;
-
-        if (! $token) {
-            return;
-        }
-
         $customerName = $order->user?->name ?? 'Guest';
         $total = number_format($order->total, 2);
         $orderId = $order->getKey();
 
         $text = "🛒 Order #{$orderId}\nCustomer: {$customerName}\nTotal: \${$total}\nPayment: {$paymentStatus}";
 
-        if ($adminChatId) {
-            $this->sendTelegramMessage($token, (string) $adminChatId, $text);
-        }
-
-        if ($customerChatId) {
-            $this->sendTelegramMessage($token, (string) $customerChatId, $text);
-        }
+        app(TelegramService::class)->sendToAdminChat($text);
+        app(TelegramService::class)->sendToChat($order->user?->telegram_chat_id, $text);
     }
 
     private function handlePaymentCompleted(Order $order, array $session): void
@@ -224,15 +210,4 @@ class PaymentService
         $this->sendTelegramNotification($order, 'canceled');
     }
 
-    private function sendTelegramMessage(string $token, string $chatId, string $text): void
-    {
-        try {
-            Http::timeout(10)->post("https://api.telegram.org/bot{$token}/sendMessage", [
-                'chat_id' => $chatId,
-                'text' => $text,
-            ]);
-        } catch (\Throwable $e) {
-            Log::warning('Telegram notification failed.', ['error' => $e->getMessage()]);
-        }
-    }
 }

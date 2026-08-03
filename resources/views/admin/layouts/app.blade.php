@@ -255,6 +255,36 @@
         @yield('content')
     </main>
 
+    {{-- Admin notification bell (order-placed alerts) --}}
+    <div class="position-fixed" style="top: 1rem; right: 1.5rem; z-index: 1050;">
+        <div class="dropdown">
+            <button
+                class="btn btn-light btn-lg rounded-circle shadow-sm position-relative"
+                type="button"
+                id="adminBell"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                aria-label="Notifications"
+            >
+                <i class="bi bi-bell"></i>
+                <span
+                    id="bellBadge"
+                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none"
+                    style="font-size: .65rem;"
+                >0</span>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end p-0 shadow-lg" style="width: 360px; max-height: 480px; overflow-y: auto;" aria-labelledby="adminBell">
+                <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom bg-light">
+                    <span class="fw-semibold">Notifications</span>
+                    <button class="btn btn-sm btn-link p-0 text-decoration-none" type="button" id="markAllReadBtn">Mark all read</button>
+                </div>
+                <div id="notifList" class="py-1">
+                    <div class="text-center text-muted py-4">Loading…</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -304,6 +334,106 @@
 
         function confirmDestroy(message = 'Are you sure you want to delete this? This cannot be undone.') {
             return confirm(message);
+        }
+
+        // ---- Admin notifications bell ----
+        const bellBadge = document.getElementById('bellBadge');
+        const notifList = document.getElementById('notifList');
+
+        function setBellBadge(count) {
+            if (!bellBadge) return;
+            count = Number(count) || 0;
+            bellBadge.textContent = count > 99 ? '99+' : String(count);
+            bellBadge.classList.toggle('d-none', count === 0);
+        }
+
+        function refreshBellBadge() {
+            fetch('{{ route('admin.notifications.unread-count') }}', { headers: { 'Accept': 'application/json' } })
+                .then(r => r.ok ? r.json() : Promise.reject())
+                .then(d => setBellBadge(d.count))
+                .catch(() => {});
+        }
+
+        function markAllRead() {
+            fetch('{{ route('admin.notifications.read-all') }}', {
+                method: 'PUT',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                },
+            })
+                .then(() => {
+                    refreshBellBadge();
+                    loadNotifications();
+                })
+                .catch(() => {});
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function loadNotifications() {
+            if (!notifList) return;
+            fetch('{{ route('admin.notifications.index') }}', { headers: { 'Accept': 'application/json' } })
+                .then(r => r.ok ? r.json() : Promise.reject())
+                .then(items => {
+                    if (!items.length) {
+                        notifList.innerHTML = '<div class="text-center text-muted py-4">No notifications</div>';
+                        return;
+                    }
+                    notifList.innerHTML = items.map(n => {
+                        const unread = n.read_at ? '' : 'bg-light';
+                        const icon = n.read_at ? 'bi-check2-circle text-success' : 'bi-bell-fill text-primary';
+                        // Escape everything server-supplied to prevent stored XSS
+                        // (notification messages include the customer's name).
+                        const title = escapeHtml(n.title);
+                        const message = escapeHtml(n.message);
+                        const created = escapeHtml(n.created_at);
+                        const actionUrl = escapeHtml(n.action_url);
+                        const viewBtn = actionUrl
+                            ? `<a href="${actionUrl}" class="btn btn-sm btn-outline-primary mt-1">View order</a>`
+                            : '';
+                        const body = `
+                            <div class="px-3 py-2 border-bottom ${unread}">
+                                <div class="d-flex align-items-start gap-2">
+                                    <i class="bi ${icon} mt-1"></i>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-semibold small">${title}</div>
+                                        <div class="text-muted small">${message}</div>
+                                        <div class="text-muted" style="font-size: .75rem;">${created}</div>
+                                        ${viewBtn}
+                                    </div>
+                                </div>
+                            </div>`;
+                        return body;
+                    }).join('');
+                })
+                .catch(() => {
+                    if (notifList) notifList.innerHTML = '<div class="text-center text-muted py-4">Failed to load notifications</div>';
+                });
+        }
+
+        if (bellBadge) {
+            refreshBellBadge();
+            setInterval(refreshBellBadge, 30000);
+
+            const bellBtn = document.getElementById('adminBell');
+            if (bellBtn) {
+                bellBtn.addEventListener('click', () => {
+                    setTimeout(loadNotifications, 100);
+                });
+            }
+
+            const markAllBtn = document.getElementById('markAllReadBtn');
+            if (markAllBtn) {
+                markAllBtn.addEventListener('click', markAllRead);
+            }
         }
     </script>
     @stack('scripts')
