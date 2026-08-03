@@ -43,6 +43,15 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Session\Middleware\StartSession::class,
         ]);
 
+        // Logging out must ALWAYS work: if the page's CSRF token is stale (the
+        // session was rotated or expired in another tab), a normal submit would
+        // 419. Exempting logout from CSRF is the standard remedy — the worst
+        // case is a third-party page force-logging the user out, which is a
+        // harmless nuisance compared to a broken logout.
+        $middleware->validateCsrfTokens(except: [
+            'admin/logout',
+        ]);
+
         // Trust CDN proxies (Cloudflare, etc.) so visitor's real IP is used
         $middleware->trustProxies(at: [
             '*',

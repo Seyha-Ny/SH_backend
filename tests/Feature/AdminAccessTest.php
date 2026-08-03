@@ -148,6 +148,19 @@ class AdminAccessTest extends TestCase
         $this->get('/admin/login')->assertNotFound();
     }
 
+    public function test_admin_logout_works_even_with_stale_csrf_token(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true, 'role' => 'admin']);
+
+        // A stale/wrong CSRF token must never block logout (419) — the request
+        // is CSRF-exempt so admins can always sign out, even after their
+        // session rotated or expired in another tab. FRONTEND_URL is unset in
+        // tests, so the logout redirect target is '/'. 
+        $this->actingAs($admin)
+            ->post('/admin/logout', ['_token' => 'stale-or-wrong-token'])
+            ->assertRedirect('/');
+    }
+
     // ------------------------------------------------------------------ //
     // Admin dashboard (web — admin only)
     // ------------------------------------------------------------------ //
