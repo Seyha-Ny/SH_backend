@@ -17,10 +17,47 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $products = Product::with('category')
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $q->where(function ($sub) use ($request) {
+                    $sub->where('name', 'like', '%' . $request->string('search') . '%')
+                        ->orWhere('sku', 'like', '%' . $request->string('search') . '%')
+                        ->orWhere('slug', 'like', '%' . $request->string('search') . '%');
+                });
+            })
+            ->when($request->filled('category_id'), function ($q) use ($request) {
+                $q->where('category_id', $request->integer('category_id'));
+            })
+            ->when($request->filled('status'), function ($q) use ($request) {
+                $q->where('status', $request->string('status'));
+            })
+            ->when($request->filled('stock'), function ($q) use ($request) {
+                // (string) cast: $request->string() returns a Stringable, and
+                // match() compares strictly (===), so the literal arms would
+                // never match without it.
+                match ((string) $request->string('stock')) {
+                    'in' => $q->where('stock', '>', 0),
+                    'out' => $q->where('stock', '=', 0),
+                    'low' => $q->where('stock', '>', 0)->where('stock', '<=', 5),
+                    default => null,
+                };
+            })
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
         return view('admin.products.index', [
-            'products' => Product::with('category')->latest()->paginate(20),
+            'products' => $products,
+            'categories' => Category::all(),
+            'stats' => [
+                'total' => Product::count(),
+                'active' => Product::active()->count(),
+                'low_stock' => Product::where('stock', '>', 0)->where('stock', '<=', 5)->count(),
+                'out_of_stock' => Product::where('stock', '=', 0)->count(),
+                'categories' => Category::count(),
+            ],
         ]);
     }
 
@@ -68,16 +105,20 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:products,slug'],
+            'sku' => ['nullable', 'string', 'max:64'],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
             'category_id' => ['required', 'exists:categories,id'],
+            'status' => ['nullable', 'in:active,inactive'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:4096'],
             'images.*' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:4096'],
         ]);
 
         $validated['slug'] = $validated['slug'] ?? '';
         $validated['slug'] = $validated['slug'] ?: Str::slug($validated['name']);
+        $validated['status'] = $validated['status'] ?? 'active';
+        $validated['sku'] = $validated['sku'] ?? null;
 
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('products', 'public');
@@ -113,15 +154,19 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:products,slug,' . $product->id],
+            'sku' => ['nullable', 'string', 'max:64'],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
             'category_id' => ['required', 'exists:categories,id'],
+            'status' => ['nullable', 'in:active,inactive'],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:4096'],
             'images.*' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg,webp', 'max:4096'],
         ]);
 
         $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
+        $validated['status'] = $validated['status'] ?? $product->status ?? 'active';
+        $validated['sku'] = $validated['sku'] ?? $product->sku;
 
         if ($request->hasFile('image')) {
             if ($product->image) {
