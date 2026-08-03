@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -22,6 +23,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // The admin panel (and storefront) are Bootstrap-based, so render
+        // pagination with the Bootstrap-5 view instead of Laravel's default
+        // Tailwind markup — the Zenora theme's .pagination CSS styles it.
+        Paginator::useBootstrapFive();
+
         // Per-account login throttle: each email address gets its own bucket,
         // so one user's typo-lockout never blocks other users behind the same
         // NAT/IP, and legitimate retries fit comfortably. Brute-force attempts

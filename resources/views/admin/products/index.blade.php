@@ -198,12 +198,7 @@
         </div>
 
         @if (method_exists($products, 'links') && $products->hasPages())
-            <div class="p-3 border-top d-flex flex-wrap align-items-center justify-content-between gap-2">
-                <span class="text-muted small">
-                    Showing {{ $products->firstItem() ?? 0 }}–{{ $products->lastItem() ?? 0 }} of {{ $products->total() }}
-                </span>
-                {{ $products->links() }}
-            </div>
+            <div class="p-3 border-top">{{ $products->links() }}</div>
         @endif
     </div>
 @endsection

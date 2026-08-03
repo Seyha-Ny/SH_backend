@@ -39,6 +39,9 @@
             --bs-link-hover-color-rgb: 107, 69, 24;
             --bs-focus-ring-color: rgba(180, 83, 9, .28);
             --bs-font-sans-serif: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            /* Serif stack for the brand wordmark — mirrors the storefront's
+               Tailwind font-serif so the crown + ZENORA lockup matches. */
+            --zenora-font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
             --bs-border-radius: .6rem;
             --bs-border-radius-sm: .45rem;
             --bs-border-radius-lg: .8rem;
@@ -88,15 +91,22 @@
             transition: transform .25s ease-in-out;
         }
         .sidebar .brand {
-            padding: 1.05rem 1.15rem .95rem;
+            padding: .95rem 1.15rem .9rem;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: .7rem;
-            font-weight: 800;
-            font-size: 1.08rem;
-            letter-spacing: .01em;
+            gap: .45rem;
             color: #fff;
             border-bottom: 1px solid rgba(255, 255, 255, .07);
+        }
+        .brand-text {
+            font-family: var(--zenora-font-serif);
+            font-weight: 800;
+            font-size: 1.02rem;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            line-height: 1;
+            color: #F5EFE6;
         }
         .brand-mark {
             width: 38px;
@@ -366,13 +376,16 @@
         }
         .topbar-mobile .btn-menu:hover { background: rgba(255, 255, 255, .14); }
         .topbar-mobile .topbar-brand {
+            font-family: var(--zenora-font-serif);
             font-weight: 800;
             display: flex;
             align-items: center;
-            gap: .5rem;
-            font-size: 1rem;
+            gap: .55rem;
+            font-size: .98rem;
+            letter-spacing: .12em;
+            text-transform: uppercase;
         }
-        .topbar-mobile .topbar-brand i { color: #D97706; }
+        .topbar-mobile .topbar-brand svg { color: #D97706; flex-shrink: 0; }
 
         /* ───────────────────────── Main area ───────────────────────── */
         .main {
@@ -759,13 +772,36 @@
         .toast { border-radius: .8rem; box-shadow: 0 10px 30px -10px rgba(28, 25, 23, .3); }
 
         /* ───────────────────────── Pagination / dropdown ───────────────────────── */
-        .pagination { --bs-pagination-border-radius: .55rem; --bs-pagination-color: #57534E; }
-        .pagination .page-link { border-color: var(--zenora-border); }
-        .pagination .page-item.active .page-link {
-            background: var(--bs-primary);
-            border-color: var(--bs-primary);
-            color: #fff;
+        .pagination {
+            --bs-pagination-border-radius: .55rem;
+            --bs-pagination-color: #57534E;
+            --bs-pagination-bg: var(--zenora-surface);
+            --bs-pagination-border-color: var(--zenora-border);
+            --bs-pagination-hover-bg: var(--zenora-surface-sunken);
+            --bs-pagination-hover-color: var(--zenora-ink);
+            --bs-pagination-hover-border-color: var(--zenora-border);
+            --bs-pagination-focus-color: var(--zenora-amber-deep);
+            --bs-pagination-focus-bg: var(--zenora-surface);
+            --bs-pagination-focus-box-shadow: 0 0 0 .2rem rgba(180, 83, 9, .18);
+            --bs-pagination-disabled-bg: var(--zenora-surface);
+            --bs-pagination-disabled-border-color: var(--zenora-border);
+            --bs-pagination-disabled-color: var(--bs-tertiary-color);
         }
+        .pagination .page-item { margin: 0 .12rem; }
+        .pagination .page-link {
+            border-color: var(--zenora-border);
+            font-weight: 600;
+            min-width: 2.25rem;
+            text-align: center;
+            transition: background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease;
+        }
+        .pagination .page-item.active .page-link {
+            background: linear-gradient(135deg, var(--zenora-amber), #D97706);
+            border-color: transparent;
+            color: #fff;
+            box-shadow: 0 4px 12px -4px rgba(217, 119, 6, .55);
+        }
+        .pagination .page-item.active .page-link:hover { color: #fff; }
         .dropdown-menu {
             border-radius: .8rem;
             border-color: var(--zenora-border);
@@ -943,7 +979,7 @@
                     <path d="M5 16L3 7l4.5 4L12 4l4.5 7L21 7l-2 9H5z" />
                 </svg>
             </span>
-            <span class="brand-text">Zenora</span>
+            <span class="brand-text">ZENORA</span>
         </div>
 
         <div class="nav flex-column">

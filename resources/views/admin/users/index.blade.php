@@ -123,12 +123,7 @@
         </div>
 
         @if (method_exists($users, 'links'))
-            <div class="p-3 border-top d-flex flex-wrap align-items-center justify-content-between gap-2">
-                <span class="text-muted small">
-                    Showing {{ $users->firstItem() ?? 0 }}–{{ $users->lastItem() ?? 0 }} of {{ $users->total() }}
-                </span>
-                {{ $users->links() }}
-            </div>
+            <div class="p-3 border-top">{{ $users->links() }}</div>
         @endif
     </div>
 @endsection
