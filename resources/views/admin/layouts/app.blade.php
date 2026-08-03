@@ -368,6 +368,25 @@
         .table tbody tr:hover { background: var(--zenora-row-hover); }
         .table td { border-color: rgba(231, 220, 203, .55); vertical-align: middle; }
 
+        .avatar-chip {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: .95rem;
+            color: #fff;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #8B6F47, #B08D5F);
+            box-shadow: 0 4px 10px -4px rgba(28, 25, 23, .4);
+        }
+        .avatar-chip.amber {
+            background: linear-gradient(135deg, #B45309, #D97706);
+            box-shadow: 0 4px 10px -4px rgba(217, 119, 6, .5);
+        }
+
         /* ───────────────────────── Badges ───────────────────────── */
         .badge { font-weight: 600; letter-spacing: .02em; }
         .badge-status {

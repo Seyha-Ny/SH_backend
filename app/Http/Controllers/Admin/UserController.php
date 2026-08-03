@@ -10,10 +10,21 @@ use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $query = User::query()->withCount('orders');
+
+        if ($search = trim((string) $request->query('search'))) {
+            // Escape LIKE wildcards so user input (% and _) is matched literally.
+            $like = addcslashes($search, '%_');
+            $query->where(function ($q) use ($like) {
+                $q->where('name', 'like', "%{$like}%")
+                    ->orWhere('email', 'like', "%{$like}%");
+            });
+        }
+
         return view('admin.users.index', [
-            'users' => User::orderByDesc('created_at')->paginate(20),
+            'users' => $query->orderByDesc('created_at')->paginate(20)->withQueryString(),
         ]);
     }
 
