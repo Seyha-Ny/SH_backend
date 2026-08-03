@@ -235,6 +235,98 @@
             border-top: 1px solid rgba(255, 255, 255, .07);
         }
 
+        /* ─────────────── Collapsible sidebar (icon-only rail) ─────────────── */
+        .sidebar { transition: width .22s ease, transform .25s ease-in-out; }
+        .main { transition: margin-left .22s ease; }
+
+        .sidebar-toggle {
+            position: fixed;
+            left: 235px;
+            top: 1.15rem;
+            width: 27px;
+            height: 27px;
+            border-radius: 50%;
+            border: 1px solid var(--zenora-border);
+            background: var(--zenora-surface);
+            color: var(--zenora-ink-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .78rem;
+            line-height: 1;
+            box-shadow: 0 4px 14px -4px rgba(28, 25, 23, .3);
+            z-index: 1045;
+            transition: left .22s ease, color .15s ease, background .15s ease, transform .15s ease;
+        }
+        .sidebar-toggle:hover {
+            color: var(--zenora-amber);
+            background: var(--zenora-surface-sunken);
+            transform: scale(1.1);
+        }
+        .sidebar-toggle:active { transform: scale(.95); }
+
+        /* Icon-only rail — desktop only; the mobile drawer always opens full */
+        @media (min-width: 992px) {
+            [data-sidebar="collapsed"] .sidebar { width: 76px; }
+            [data-sidebar="collapsed"] .main { margin-left: 76px; }
+            [data-sidebar="collapsed"] .sidebar-toggle { left: 63px; }
+
+            [data-sidebar="collapsed"] .sidebar .brand {
+                padding: 1.05rem .5rem .95rem;
+                justify-content: center;
+                gap: 0;
+            }
+            [data-sidebar="collapsed"] .sidebar .nav { padding: .4rem .6rem .6rem; }
+            [data-sidebar="collapsed"] .sidebar .nav .nav-heading {
+                font-size: 0;
+                height: 1px;
+                padding: 0;
+                margin: .55rem .4rem;
+                background: rgba(255, 255, 255, .14);
+                border-radius: 999px;
+                overflow: hidden;
+            }
+            [data-sidebar="collapsed"] .sidebar .nav a,
+            [data-sidebar="collapsed"] .sidebar .nav .nav-link {
+                justify-content: center;
+                padding: .58rem 0;
+                gap: 0;
+            }
+            [data-sidebar="collapsed"] .sidebar .nav a:hover,
+            [data-sidebar="collapsed"] .sidebar .nav .nav-link:hover { transform: none; }
+
+            [data-sidebar="collapsed"] .sidebar .admin-identity {
+                padding: .8rem .5rem;
+                justify-content: center;
+                gap: 0;
+            }
+
+            [data-sidebar="collapsed"] .sidebar .logout {
+                padding: .7rem .6rem 1rem;
+                display: flex;
+                flex-direction: column;
+                gap: .5rem;
+            }
+            [data-sidebar="collapsed"] .sidebar .logout .btn { padding: .55rem 0; }
+            [data-sidebar="collapsed"] .sidebar .logout .theme-toggle { gap: 0; }
+
+            /* Visually hide labels while keeping them in the a11y tree. */
+            [data-sidebar="collapsed"] .sidebar .nav-label,
+            [data-sidebar="collapsed"] .sidebar .brand-text,
+            [data-sidebar="collapsed"] .sidebar .identity-text,
+            [data-sidebar="collapsed"] .sidebar .logout .btn span {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border: 0;
+            }
+        }
+
         /* ───────────────────────── Mobile topbar ───────────────────────── */
         .topbar-mobile {
             display: none;
@@ -505,12 +597,18 @@
             .main { margin-left: 0; padding: 1.25rem 1rem 3rem; }
             .topbar-mobile { display: flex; }
             .stat-card .value { font-size: 1.7rem; }
+
+            .sidebar-toggle { display: none; }
         }
         @media (min-width: 992px) and (max-width: 1199.98px) {
             .sidebar { width: 224px; }
             .main { margin-left: 224px; padding-left: 1.4rem; padding-right: 1.4rem; }
             .brand-mark { width: 34px; height: 34px; font-size: 1rem; }
             .admin-avatar { width: 34px; height: 34px; font-size: .85rem; }
+            .sidebar-toggle { left: 211px; }
+            [data-sidebar="collapsed"] .sidebar { width: 72px; }
+            [data-sidebar="collapsed"] .main { margin-left: 72px; }
+            [data-sidebar="collapsed"] .sidebar-toggle { left: 59px; }
         }
         @media (min-width: 992px) {
             .topbar-mobile { display: none !important; }
@@ -612,7 +710,8 @@
         }
     </style>
     <script>
-        // Apply the saved/system dark-mode preference before first paint (no flash).
+        // Apply the saved/system dark-mode preference before first paint (no flash),
+        // plus the persisted sidebar collapse state (icon-only rail).
         (function () {
             try {
                 var t = localStorage.getItem('zenora-admin-theme');
@@ -622,6 +721,12 @@
                 document.documentElement.setAttribute('data-bs-theme', t);
             } catch (e) {
                 document.documentElement.setAttribute('data-bs-theme', 'light');
+            }
+            try {
+                var s = localStorage.getItem('zenora-admin-sidebar');
+                document.documentElement.setAttribute('data-sidebar', s === 'collapsed' ? 'collapsed' : 'expanded');
+            } catch (e) {
+                document.documentElement.setAttribute('data-sidebar', 'expanded');
             }
         })();
     </script>
@@ -642,53 +747,53 @@
                     <path d="M5 16L3 7l4.5 4L12 4l4.5 7L21 7l-2 9H5z" />
                 </svg>
             </span>
-            <span>Zenora</span>
+            <span class="brand-text">Zenora</span>
         </div>
 
         <div class="nav flex-column">
-            <a href="{{ route('admin.dashboard') }}" class="nav-link {{ ($currentRoute === 'admin.dashboard') ? 'active' : '' }}">
-                <i class="bi bi-speedometer2"></i> Dashboard
+            <a href="{{ route('admin.dashboard') }}" class="nav-link {{ ($currentRoute === 'admin.dashboard') ? 'active' : '' }}" title="Dashboard">
+                <i class="bi bi-speedometer2"></i> <span class="nav-label">Dashboard</span>
             </a>
 
             <div class="nav-heading">Products</div>
-            <a href="{{ route('admin.products.index') }}" class="nav-link {{ ($currentRoute === 'products.index' || $currentRoute === 'products.create' || $currentRoute === 'products.edit') ? 'active' : '' }}">
-                <i class="bi bi-box-seam"></i> All Products
+            <a href="{{ route('admin.products.index') }}" class="nav-link {{ ($currentRoute === 'products.index' || $currentRoute === 'products.create' || $currentRoute === 'products.edit') ? 'active' : '' }}" title="All Products">
+                <i class="bi bi-box-seam"></i> <span class="nav-label">All Products</span>
             </a>
-            <a href="{{ route('admin.products.create') }}" class="nav-link {{ ($currentRoute === 'products.create') ? 'active' : '' }}">
-                <i class="bi bi-plus-lg"></i> Add New
+            <a href="{{ route('admin.products.create') }}" class="nav-link {{ ($currentRoute === 'products.create') ? 'active' : '' }}" title="Add New">
+                <i class="bi bi-plus-lg"></i> <span class="nav-label">Add New</span>
             </a>
-            <a href="{{ route('admin.reviews.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'reviews')) ? 'active' : '' }}">
-                <i class="bi bi-chat-dots"></i> Reviews
+            <a href="{{ route('admin.reviews.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'reviews')) ? 'active' : '' }}" title="Reviews">
+                <i class="bi bi-chat-dots"></i> <span class="nav-label">Reviews</span>
             </a>
-            <a href="{{ route('admin.categories.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'categories')) ? 'active' : '' }}">
-                <i class="bi bi-folder2"></i> Categories
+            <a href="{{ route('admin.categories.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'categories')) ? 'active' : '' }}" title="Categories">
+                <i class="bi bi-folder2"></i> <span class="nav-label">Categories</span>
             </a>
 
             <div class="nav-heading">Orders</div>
-            <a href="{{ route('admin.orders.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'orders')) ? 'active' : '' }}">
-                <i class="bi bi-receipt"></i> All Orders
+            <a href="{{ route('admin.orders.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'orders')) ? 'active' : '' }}" title="All Orders">
+                <i class="bi bi-receipt"></i> <span class="nav-label">All Orders</span>
             </a>
 
             <div class="nav-heading">Settings</div>
-            <a href="{{ route('admin.shipping-methods.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'shipping-methods')) ? 'active' : '' }}">
-                <i class="bi bi-truck"></i> Shipping Methods
+            <a href="{{ route('admin.shipping-methods.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'shipping-methods')) ? 'active' : '' }}" title="Shipping Methods">
+                <i class="bi bi-truck"></i> <span class="nav-label">Shipping Methods</span>
             </a>
 
             <div class="nav-heading">Customers</div>
-            <a href="{{ route('admin.users.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'users')) ? 'active' : '' }}">
-                <i class="bi bi-people"></i> Users
+            <a href="{{ route('admin.users.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'users')) ? 'active' : '' }}" title="Users">
+                <i class="bi bi-people"></i> <span class="nav-label">Users</span>
             </a>
 
             <div class="nav-heading">Marketing</div>
-            <a href="{{ route('admin.coupons.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'coupons')) ? 'active' : '' }}">
-                <i class="bi bi-ticket-perforated"></i> Coupons
+            <a href="{{ route('admin.coupons.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'coupons')) ? 'active' : '' }}" title="Coupons">
+                <i class="bi bi-ticket-perforated"></i> <span class="nav-label">Coupons</span>
             </a>
         </div>
 
         @if ($admin)
             <div class="admin-identity">
                 <span class="admin-avatar">{{ $adminInitial }}<span class="online-dot"></span></span>
-                <span class="min-w-0">
+                <span class="min-w-0 identity-text">
                     <span class="name d-block">{{ $admin->name }}</span>
                     <span class="email d-block">{{ $admin->email }}</span>
                 </span>
@@ -702,12 +807,17 @@
             </button>
             <form action="{{ route('admin.logout') }}" method="POST">
                 @csrf
-                <button type="submit" class="btn btn-outline-light w-100">
-                    <i class="bi bi-box-arrow-right"></i> Logout
+                <button type="submit" class="btn btn-outline-light w-100" title="Logout">
+                    <i class="bi bi-box-arrow-right"></i> <span class="logout-label">Logout</span>
                 </button>
             </form>
         </div>
     </nav>
+
+    {{-- Sidebar collapse toggle (desktop icon rail) --}}
+    <button type="button" id="sidebarToggle" class="sidebar-toggle" aria-label="Collapse sidebar" aria-expanded="true" title="Collapse sidebar">
+        <i class="bi bi-chevron-double-left" id="sidebarToggleIcon"></i>
+    </button>
 
     {{-- Mobile topbar --}}
     <div class="topbar-mobile">
@@ -841,6 +951,48 @@
             if (themeToggleIconMobile) themeToggleIconMobile.className = 'bi ' + (dark ? 'bi-sun-fill' : 'bi-moon-stars-fill');
             if (themeToggleLabel) themeToggleLabel.textContent = dark ? 'Light' : 'Dark';
         }
+
+        // ---- Sidebar collapse (icon-only rail, persisted per browser) ----
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarToggleIcon = document.getElementById('sidebarToggleIcon');
+
+        function zenoraCurrentSidebar() {
+            return document.documentElement.getAttribute('data-sidebar') === 'collapsed';
+        }
+
+        function zenoraApplySidebar(collapsed) {
+            document.documentElement.setAttribute('data-sidebar', collapsed ? 'collapsed' : 'expanded');
+            try { localStorage.setItem('zenora-admin-sidebar', collapsed ? 'collapsed' : 'expanded'); } catch (e) {}
+            if (sidebarToggleIcon) sidebarToggleIcon.className = 'bi ' + (collapsed ? 'bi-chevron-double-right' : 'bi-chevron-double-left');
+            if (sidebarToggle) {
+                sidebarToggle.setAttribute('aria-expanded', String(!collapsed));
+                sidebarToggle.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+                sidebarToggle.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+            }
+        }
+
+        function zenoraToggleSidebar() {
+            zenoraApplySidebar(!zenoraCurrentSidebar());
+        }
+
+        if (sidebarToggle) sidebarToggle.addEventListener('click', zenoraToggleSidebar);
+
+        // Keep the chevron + aria in sync with the pre-paint state.
+        if (sidebarToggle) {
+            const collapsed = zenoraCurrentSidebar();
+            sidebarToggle.setAttribute('aria-expanded', String(!collapsed));
+            sidebarToggle.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+            sidebarToggle.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+            if (sidebarToggleIcon) sidebarToggleIcon.className = 'bi ' + (collapsed ? 'bi-chevron-double-right' : 'bi-chevron-double-left');
+        }
+
+        // Keyboard shortcut: Ctrl+\ toggles the rail (like modern dev panels).
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === '\\') {
+                e.preventDefault();
+                zenoraToggleSidebar();
+            }
+        });
 
         function setLoading(btn, loading) {
             if (!btn) return;
