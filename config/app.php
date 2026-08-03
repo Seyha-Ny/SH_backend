@@ -56,6 +56,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Storefront URL
+    |--------------------------------------------------------------------------
+    |
+    | Base URL of the Vue storefront. Used when redirecting guests away from
+    | the admin panel (there is no separate admin login page — everyone signs
+    | in through the storefront form) and after admin logout. Leave empty when
+    | the storefront is served from the same origin (e.g. behind the same
+    | nginx host in production) so redirects stay relative ("/auth").
+    |
+    */
+
+    'frontend_url' => env('FRONTEND_URL', ''),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

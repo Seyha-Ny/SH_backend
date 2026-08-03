@@ -21,6 +21,28 @@ return Application::configure(basePath: dirname(__DIR__))
             'cache' => \App\Http\Middleware\HttpCache::class,
         ]);
 
+        // There is no separate admin login page: everyone signs in through the
+        // unified storefront form. Guests who open a protected web route
+        // (e.g. the admin panel) are sent to the storefront auth page.
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->expectsJson()) {
+                return null;
+            }
+
+            $base = rtrim((string) config('app.frontend_url'), '/');
+
+            return $base . '/auth';
+        });
+
+        // Session support for the unified login: the storefront /api/login form
+        // establishes a real session (no CSRF — the SPA still authenticates with
+        // a bearer token) so admins can open the /admin panel right after.
+        $middleware->group('session-only', [
+            \Illuminate\Cookie\Middleware\EncryptCookies::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+        ]);
+
         // Trust CDN proxies (Cloudflare, etc.) so visitor's real IP is used
         $middleware->trustProxies(at: [
             '*',

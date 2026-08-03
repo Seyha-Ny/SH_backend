@@ -20,7 +20,12 @@ class AdminMiddleware
                 abort(401, 'Unauthenticated. Please provide a valid authentication token.');
             }
 
-            return redirect('/admin/login');
+            // No separate admin login page — send guests to the unified
+            // storefront sign-in form (relative /auth when the storefront is
+            // served from the same origin, or FRONTEND_URL/auth in dev).
+            $base = rtrim((string) config('app.frontend_url'), '/');
+
+            return redirect($base . '/auth');
         }
 
         $isAdmin = $user->is_admin && in_array($user->role, ['admin', 'super_admin'], true);

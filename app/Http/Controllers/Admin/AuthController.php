@@ -9,52 +9,22 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    public function showLoginForm()
-    {
-        if (Auth::check() && Auth::user()->is_admin) {
-            return redirect()->route('admin.dashboard');
-        }
-
-        return view('auth.admin-login');
-    }
-
-    public function login(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
-        ], [
-            'email.required' => 'Please enter your email.',
-            'password.required' => 'Please enter your password.',
-        ]);
-
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $request->filled('remember'))) {
-            $request->session()->regenerate();
-
-            if (!Auth::user()->is_admin) {
-                Auth::logout();
-                $request->session()->invalidate();
-                $request->session()->regenerateToken();
-
-                return redirect('/admin/login')->withErrors([
-                    'email' => 'You are not authorized to access the admin panel.',
-                ]);
-            }
-
-            return redirect()->route('admin.dashboard');
-        }
-
-        return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
-    }
-
+    /**
+     * Sign the admin out of the web session and return them to the storefront.
+     *
+     * There is no separate admin login page anymore: admins sign in via the
+     * unified storefront form (POST /api/login), so after logging out they go
+     * back to the storefront — same origin in production (FRONTEND_URL empty),
+     * or the dev storefront URL when FRONTEND_URL is set.
+     */
     public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/admin/login');
+        $base = rtrim((string) config('app.frontend_url'), '/');
+
+        return redirect($base ?: '/');
     }
 }

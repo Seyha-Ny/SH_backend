@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController;
@@ -19,16 +20,22 @@ Route::get('/swagger.json', function () {
     return response()->json(require public_path('swagger.json'));
 });
 
-// Admin authentication routes
-Route::middleware('guest')->prefix('admin')->group(function () {
-    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('admin.login.post');
-});
+// No /admin/login route: admins sign in exclusively through the unified
+// storefront form (POST /api/login), which establishes the web session that
+// unlocks the panel. Guests who open an admin URL without a session are
+// redirected to the storefront auth page (see bootstrap/app.php
+// redirectGuestsTo and AdminMiddleware).
 
 Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Notifications (admin panel bell)
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
+    Route::put('/notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::put('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
 
     // Products
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');

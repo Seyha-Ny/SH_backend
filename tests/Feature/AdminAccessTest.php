@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -137,12 +138,26 @@ class AdminAccessTest extends TestCase
     }
 
     // ------------------------------------------------------------------ //
+    // Admin login — unified storefront form only (no /admin/login page)
+    // ------------------------------------------------------------------ //
+
+    public function test_admin_login_route_does_not_exist(): void
+    {
+        // The separate admin login page was removed: admins sign in only
+        // through the storefront form, so /admin/login must be a 404.
+        $this->get('/admin/login')->assertNotFound();
+    }
+
+    // ------------------------------------------------------------------ //
     // Admin dashboard (web — admin only)
     // ------------------------------------------------------------------ //
 
-    public function test_dashboard_redirects_unauthenticated_visitor_to_login(): void
+    public function test_dashboard_redirects_guest_to_storefront_auth(): void
     {
-        $this->get('/admin/dashboard')->assertRedirect('/admin/login');
+        // There is no separate admin login page — guests are sent to the
+        // unified storefront sign-in form (relative /auth in tests, since
+        // FRONTEND_URL is unset).
+        $this->get('/admin/dashboard')->assertRedirect('/auth');
     }
 
     public function test_dashboard_forbidden_for_regular_user(): void
@@ -172,5 +187,75 @@ class AdminAccessTest extends TestCase
             ->get('/admin/dashboard')
             ->assertOk()
             ->assertSee('Dashboard');
+    }
+
+    // ------------------------------------------------------------------ //
+    // Unified login — the storefront /api/login form signs in both roles
+    // ------------------------------------------------------------------ //
+
+    public function test_admin_api_login_establishes_web_session_for_admin_panel(): void
+    {
+        $admin = User::factory()->create([
+            'is_admin' => true,
+            'role' => 'admin',
+            'password' => Hash::make('secret123'),
+        ]);
+
+        // Simulate a stateful SPA request (Sanctum boots the session for the
+        // storefront origin) so the unified login can create the web session.
+        $response = $this->withHeaders(['Origin' => 'http://localhost:5173'])
+            ->postJson('/api/login', [
+                'email' => $admin->email,
+                'password' => 'secret123',
+            ]);
+
+        $response->assertOk()
+            ->assertJsonPath('user.is_admin', true)
+            ->assertJsonPath('user.role', 'admin')
+            ->assertJsonStructure(['token', 'user']);
+
+        // The same login must have authenticated the web guard too.
+        $this->assertAuthenticated('web');
+
+        // And the session established by the API login must unlock /admin.
+        $cookie = collect($response->headers->getCookies())
+            ->first(fn ($c) => $c->getName() === config('session.cookie'));
+
+        $this->assertNotNull($cookie, 'API login did not set a session cookie.');
+
+        $this->withCookie($cookie->getName(), $cookie->getValue())
+            ->get('/admin/dashboard')
+            ->assertOk()
+            ->assertSee('Dashboard');
+    }
+
+    public function test_customer_api_login_does_not_grant_admin_panel_access(): void
+    {
+        $customer = User::factory()->create([
+            'is_admin' => false,
+            'role' => 'customer',
+            'password' => Hash::make('secret123'),
+        ]);
+
+        $response = $this->withHeaders(['Origin' => 'http://localhost:5173'])
+            ->postJson('/api/login', [
+                'email' => $customer->email,
+                'password' => 'secret123',
+            ]);
+
+        $response->assertOk()
+            ->assertJsonPath('user.is_admin', false);
+
+        // Customers are NOT signed into the web guard by the storefront form.
+        $this->assertGuest('web');
+
+        // Even carrying the session cookie, the admin panel stays off-limits
+        // and the visitor is sent to the storefront sign-in form.
+        $cookie = collect($response->headers->getCookies())
+            ->first(fn ($c) => $c->getName() === config('session.cookie'));
+
+        $this->withCookie($cookie->getName(), $cookie->getValue())
+            ->get('/admin/dashboard')
+            ->assertRedirect('/auth');
     }
 }
