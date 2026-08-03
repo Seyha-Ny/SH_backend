@@ -471,6 +471,139 @@
         }
         .stat-card .quick-action a:hover { color: var(--zenora-amber-deep); text-decoration: underline; }
 
+        /* ───────────────────── KPI hero & stat hierarchy ───────────────────── */
+        .kpi-hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1.1rem;
+            background:
+                radial-gradient(620px 280px at 92% -18%, rgba(217, 119, 6, .3), transparent 62%),
+                linear-gradient(135deg, #241E18 0%, #1C1917 58%, #2C251F 100%);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, .08);
+            box-shadow: 0 1px 2px rgba(28, 25, 23, .08), 0 20px 46px -20px rgba(28, 25, 23, .5);
+            display: flex;
+            flex-direction: column;
+            gap: 1.1rem;
+            padding: 1.4rem 1.5rem 1.25rem;
+            min-height: 100%;
+        }
+        @media (min-width: 1200px) {
+            .kpi-hero { flex-direction: row; align-items: stretch; }
+        }
+        .kpi-hero-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+        .kpi-hero-chart { flex: 0 0 46%; min-width: 0; min-height: 128px; position: relative; }
+        .kpi-hero-chart canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+        @media (max-width: 1199.98px) { .kpi-hero-chart { min-height: 112px; } }
+        .kpi-hero-icon {
+            width: 46px; height: 46px; border-radius: .85rem;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-size: 1.35rem; color: #fff;
+            background: linear-gradient(135deg, #B45309, #F59E0B);
+            box-shadow: 0 8px 22px -8px rgba(217, 119, 6, .75);
+        }
+        .kpi-hero-label {
+            font-size: .76rem; text-transform: uppercase; letter-spacing: .16em;
+            font-weight: 700; color: rgba(255, 255, 255, .6); margin-top: 1rem;
+        }
+        .kpi-hero-value {
+            font-size: 2.45rem; font-weight: 800; letter-spacing: -.03em;
+            line-height: 1.08; color: #fff; margin-top: .1rem;
+        }
+        .kpi-hero-meta { font-size: .82rem; color: rgba(255, 255, 255, .56); margin-top: .35rem; }
+        .kpi-hero-link {
+            margin-top: auto; padding-top: 1rem;
+            font-size: .84rem; font-weight: 700; color: #F0B26B;
+            text-decoration: none; display: inline-flex; align-items: center; gap: .35rem;
+        }
+        .kpi-hero-link:hover { color: #fff; }
+        .kpi-hero-link i { transition: transform .15s ease; }
+        .kpi-hero-link:hover i { transform: translateX(3px); }
+
+        .stat-card--secondary .value { font-size: 1.55rem; }
+        .stat-spark { height: 54px; position: relative; margin-top: .4rem; }
+        .stat-spark canvas { position: absolute; inset: 0; }
+
+        /* ────────────── Monthly revenue target (prominent) ────────────── */
+        .target-bar {
+            position: relative;
+            display: flex;
+            align-items: center;
+            height: 1.6rem;
+            border-radius: 999px;
+            background: var(--zenora-progress-track);
+            box-shadow: inset 0 1px 3px rgba(28, 25, 23, .14);
+            overflow: hidden;
+            margin-top: .55rem;
+        }
+        .target-bar-fill {
+            position: relative;
+            flex-shrink: 0;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #92400E 0%, #D97706 55%, #F59E0B 100%);
+            box-shadow: 0 0 16px rgba(217, 119, 6, .45), inset 0 1px 0 rgba(255, 255, 255, .28);
+            transition: width .7s cubic-bezier(.22, .61, .36, 1);
+            overflow: hidden;
+        }
+        .target-bar-fill::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(105deg, transparent 32%, rgba(255, 255, 255, .35) 50%, transparent 68%);
+            background-size: 240% 100%;
+            animation: zenoraShimmer 2.8s linear infinite;
+        }
+        @keyframes zenoraShimmer {
+            0% { background-position: 240% 0; }
+            100% { background-position: -40% 0; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .target-bar-fill::after { animation: none; }
+        }
+        .target-bar-label {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: flex-end;
+            padding-right: .65rem;
+            font-size: .74rem; font-weight: 800; letter-spacing: .01em;
+            color: #fff; text-shadow: 0 1px 2px rgba(28, 25, 23, .45);
+        }
+        .target-bar-label.out {
+            position: static; display: inline-flex; align-items: center;
+            padding: 0 0 0 .65rem; color: var(--zenora-ink);
+            text-shadow: none;
+        }
+
+        /* ─────────────────── Charts (tooltip-safe) ─────────────────── */
+        .chart-card { position: relative; }
+        /* Higher specificity than .table-card's overflow:hidden so hover
+           tooltips can never be clipped at the card edge. */
+        .table-card.chart-card { overflow: visible; }
+        .zenora-chart-tooltip {
+            position: absolute; left: 0; top: 0; z-index: 40;
+            pointer-events: none;
+            max-width: 220px; white-space: nowrap;
+            background: #1C1917; color: #F5EFE6;
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: .55rem;
+            padding: .45rem .7rem;
+            font-size: .76rem; line-height: 1.4;
+            box-shadow: 0 12px 28px -12px rgba(28, 25, 23, .55);
+            opacity: 0;
+            transition: opacity .14s ease;
+        }
+        .zenora-chart-tooltip .tt-title { font-weight: 700; color: #F0B26B; margin-bottom: .1rem; }
+        [data-bs-theme="dark"] .zenora-chart-tooltip {
+            background: #F5EFE6; color: #1C1917;
+            border-color: rgba(28, 25, 23, .14);
+            box-shadow: 0 12px 28px -12px rgba(0, 0, 0, .6);
+        }
+        [data-bs-theme="dark"] .zenora-chart-tooltip .tt-title { color: #92400E; }
+
+        /* Keep the fixed notification bell clear of page headers. */
+        @media (min-width: 992px) {
+            .page-header { padding-right: 4.25rem; }
+        }
+
         .table-card, .low-stock-card { overflow: hidden; }
         .table-card > .p-3,
         .low-stock-card > .p-3,
@@ -885,8 +1018,8 @@
                 <i class="bi bi-bell"></i>
                 <span
                     id="bellBadge"
-                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none"
-                    style="font-size: .65rem;"
+                    class="position-absolute top-0 end-0 translate-middle badge rounded-pill bg-danger d-none"
+                    style="font-size: .6rem; padding: .35em .6em;"
                 >0</span>
             </button>
             <div class="dropdown-menu dropdown-menu-end p-0 shadow-lg" style="width: 360px; max-height: 480px; overflow-y: auto;" aria-labelledby="adminBell">
