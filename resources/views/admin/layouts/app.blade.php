@@ -113,14 +113,10 @@
             box-shadow: 0 6px 16px -6px rgba(217, 119, 6, .55);
             flex-shrink: 0;
         }
-        .brand-sub {
-            font-size: .62rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .28em;
-            color: rgba(255, 255, 255, .45);
-            display: block;
-            margin-top: 1px;
+        .brand-mark svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
         }
         .sidebar .nav {
             padding: .4rem .85rem .6rem;
@@ -608,11 +604,13 @@
 
     <nav class="sidebar" id="adminSidebar" aria-label="Admin sidebar">
         <div class="brand">
-            <span class="brand-mark"><i class="bi bi-bag-heart-fill"></i></span>
-            <span>
-                Zenora
-                <span class="brand-sub">Admin Panel</span>
+            <span class="brand-mark" aria-hidden="true">
+                {{-- Same crown mark as the storefront logo (Logo.vue) --}}
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M5 16L3 7l4.5 4L12 4l4.5 7L21 7l-2 9H5z" />
+                </svg>
             </span>
+            <span>Zenora</span>
         </div>
 
         <div class="nav flex-column">
@@ -684,7 +682,12 @@
         <button class="btn-menu" type="button" onclick="document.getElementById('adminSidebar').classList.add('show')" aria-label="Toggle menu">
             <i class="bi bi-list fs-5"></i>
         </button>
-        <span class="topbar-brand"><i class="bi bi-bag-heart-fill"></i> Zenora Admin</span>
+        <span class="topbar-brand">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width: 18px; height: 18px;" aria-hidden="true">
+                <path d="M5 16L3 7l4.5 4L12 4l4.5 7L21 7l-2 9H5z" />
+            </svg>
+            Zenora
+        </span>
         <div class="ms-auto d-flex align-items-center gap-2">
             <button class="btn-menu" type="button" id="themeToggleMobile" aria-label="Toggle dark mode" title="Toggle dark mode">
                 <i class="bi bi-moon-stars-fill" id="themeToggleIconMobile"></i>
