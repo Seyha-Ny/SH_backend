@@ -141,12 +141,16 @@ jobs:
         working-directory: frontend
         run: npm test
 
-  # Real-browser admin login check: provisions the Laravel backend (MySQL +
-  # Redis), seeds the admin user, then runs the Playwright e2e spec that signs
-  # in through the storefront form and expects the /admin dashboard to load.
-  # Runs on every push/PR that would be deployed, so a broken unified-auth flow
-  # can never ship. (The spec self-skips if the backend is unreachable, but in
-  # this job we fail fast on the health check instead.)
+  # Real-browser admin panel checks: provisions the Laravel backend (MySQL +
+  # Redis), seeds the admin user, then runs the Playwright e2e specs that sign
+  # in through the storefront form and expect the /admin dashboard to load —
+  # plus the dashboard KPI band spec guarding the redesign (revenue hero,
+  # orders primary card, secondary stat cards, visual hierarchy). Runs on
+  # every push/PR that would be deployed, so a broken unified-auth flow or a
+  # regressed dashboard can never ship. (The specs self-skip if the backend is
+  # unreachable, but in this job we fail fast on the health check instead.)
+  # NB: keep the job NAME stable (it may be referenced by branch-protection
+  # required status checks) — only the run step grew.
   admin-login-e2e:
     name: Admin login E2E (Playwright)
     runs-on: ubuntu-latest
@@ -258,10 +262,10 @@ jobs:
         working-directory: frontend
         run: npx playwright install --with-deps chromium
 
-      # Serve the backend in the background and run the spec in the same step
+      # Serve the backend in the background and run the specs in the same step
       # so the server stays alive for the duration. Fail fast (instead of the
-      # spec's graceful skip) when the backend can't start.
-      - name: Start backend and run admin-login E2E
+      # specs' graceful skip) when the backend can't start.
+      - name: Start backend and run admin panel E2E
         run: |
           php artisan serve --host=127.0.0.1 --port=8000 > /tmp/laravel.log 2>&1 &
           SERVER_PID=$!
@@ -280,4 +284,7 @@ jobs:
             exit 1
           fi
           cd frontend
-          npm run verify:admin-login
+          # One Playwright invocation for both admin specs so the Vite preview
+          # webServer builds only once (running two npm scripts separately
+          # would build the frontend twice).
+          npm run verify:admin-panel
