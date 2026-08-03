@@ -467,26 +467,60 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Theme-aware Chart.js palettes (re-styled when the admin toggles dark mode).
+        const palettes = {
+            light: {
+                text: '#57534E',
+                grid: 'rgba(28, 25, 23, .08)',
+                doughnut: ['#D97706', '#2F8F5B', '#DC4C3E', '#A8A29E', '#1C1917', '#8B6F47'],
+                lineBorder: '#1C1917',
+                pointBg: '#ffffff',
+            },
+            dark: {
+                text: '#B8B1A6',
+                grid: 'rgba(237, 230, 218, .1)',
+                doughnut: ['#F0B26B', '#3DA46C', '#E06A5C', '#8A857F', '#EDE6DA', '#C9A96A'],
+                lineBorder: '#F5EFE6',
+                pointBg: '#1C1917',
+            },
+        };
+        const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+        const charts = [];
+
+        function styleCharts(dark) {
+            const p = palettes[dark ? 'dark' : 'light'];
+            Chart.defaults.color = p.text;
+            for (const c of charts) {
+                if (c.config.type === 'doughnut') {
+                    c.data.datasets[0].backgroundColor = p.doughnut;
+                    c.options.plugins.legend.labels.color = p.text;
+                } else if (c.config.type === 'bar' || c.config.type === 'line') {
+                    c.options.scales.x.ticks.color = p.text;
+                    c.options.scales.y.ticks.color = p.text;
+                    c.options.scales.x.grid.color = p.grid;
+                    c.options.scales.y.grid.color = p.grid;
+                    if (c.config.type === 'line') {
+                        c.data.datasets[0].borderColor = p.lineBorder;
+                        c.data.datasets[0].pointBackgroundColor = p.pointBg;
+                    }
+                }
+                c.update();
+            }
+        }
+
         const statusData = @json($statusBreakdown);
         const labels = Object.keys(statusData || {});
         const values = Object.values(statusData || {});
 
         const statusCtx = document.getElementById('orderStatusChart');
         if (statusCtx) {
-            new Chart(statusCtx, {
+            charts.push(new Chart(statusCtx, {
                 type: 'doughnut',
                 data: {
                     labels: labels,
                     datasets: [{
                         data: values,
-                        backgroundColor: [
-                            '#D97706',
-                            '#2F8F5B',
-                            '#DC4C3E',
-                            '#A8A29E',
-                            '#1C1917',
-                            '#8B6F47',
-                        ],
+                        backgroundColor: palettes[isDark ? 'dark' : 'light'].doughnut,
                     }],
                 },
                 options: {
@@ -495,7 +529,7 @@
                         legend: { position: 'bottom' },
                     },
                 },
-            });
+            }));
         }
 
         const weeklyData = @json($weeklyOrders);
@@ -504,7 +538,7 @@
 
         const weeklyCtx = document.getElementById('weeklyOrdersChart');
         if (weeklyCtx) {
-            new Chart(weeklyCtx, {
+            charts.push(new Chart(weeklyCtx, {
                 type: 'bar',
                 data: {
                     labels: weeklyLabels,
@@ -518,13 +552,14 @@
                 options: {
                     responsive: true,
                     scales: {
+                        x: { grid: { display: false } },
                         y: {
                             beginAtZero: true,
                             ticks: { stepSize: 1 },
                         },
                     },
                 },
-            });
+            }));
         }
 
         const revenueData = @json($revenueWeekly);
@@ -533,18 +568,18 @@
 
         const revenueCtx = document.getElementById('revenueChart');
         if (revenueCtx) {
-            new Chart(revenueCtx, {
+            charts.push(new Chart(revenueCtx, {
                 type: 'line',
                 data: {
                     labels: revenueLabels,
                     datasets: [{
                         label: 'Revenue',
                         data: revenueValues,
-                        borderColor: '#1C1917',
+                        borderColor: palettes[isDark ? 'dark' : 'light'].lineBorder,
                         backgroundColor: 'rgba(180, 83, 9, 0.12)',
                         fill: true,
                         tension: 0.35,
-                        pointBackgroundColor: '#ffffff',
+                        pointBackgroundColor: palettes[isDark ? 'dark' : 'light'].pointBg,
                         pointBorderColor: '#B45309',
                         pointBorderWidth: 2,
                     }],
@@ -555,6 +590,7 @@
                         legend: { display: false },
                     },
                     scales: {
+                        x: { grid: { display: false } },
                         y: {
                             beginAtZero: true,
                             ticks: {
@@ -565,8 +601,11 @@
                         },
                     },
                 },
-            });
+            }));
         }
+
+        styleCharts(isDark);
+        window.addEventListener('zenora-theme-change', (e) => styleCharts(e.detail === 'dark'));
     });
 </script>
 @endpush

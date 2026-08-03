@@ -50,6 +50,14 @@
             --bs-btn-border-radius-sm: .5rem;
             --bs-btn-padding-y: .55rem;
             --bs-btn-padding-x: 1.05rem;
+
+            /* ── Semantic surfaces (re-mapped for dark mode) ── */
+            --zenora-surface: #FFFFFF;
+            --zenora-surface-sunken: #F6F0E4;
+            --zenora-row-hover: #FBF6EC;
+            --zenora-input-bg: #FFFFFF;
+            --zenora-input-border: #DCCFB6;
+            --zenora-progress-track: #EDE3D0;
         }
 
         body {
@@ -267,7 +275,7 @@
         .stat-card,
         .table-card,
         .low-stock-card {
-            background: #fff;
+            background: var(--zenora-surface);
             border: 1px solid var(--zenora-border);
             border-radius: 1rem;
             box-shadow: 0 1px 2px rgba(28, 25, 23, .04), 0 10px 30px -16px rgba(28, 25, 23, .16);
@@ -337,7 +345,7 @@
         .table-card > .p-3,
         .low-stock-card > .p-3,
         .table-card > div.p-3 {
-            background: linear-gradient(180deg, var(--zenora-cream-soft), #fff);
+            background: linear-gradient(180deg, var(--zenora-cream-soft), var(--zenora-surface));
             border-bottom: 1px solid var(--zenora-border);
         }
         .table-card h2.h6, .low-stock-card h2.h6 { font-weight: 800; color: var(--zenora-ink); letter-spacing: -.01em; }
@@ -345,7 +353,7 @@
         /* ───────────────────────── Tables ───────────────────────── */
         .table { --bs-table-bg: transparent; }
         .table thead th {
-            background: #F6F0E4;
+            background: var(--zenora-surface-sunken);
             border-bottom: 1px solid var(--zenora-border);
             font-weight: 700;
             color: #57534E;
@@ -357,7 +365,7 @@
         }
         .table > :not(caption) > * > * { padding: .8rem .85rem; }
         .table tbody tr { transition: background .12s ease; }
-        .table tbody tr:hover { background: #FBF6EC; }
+        .table tbody tr:hover { background: var(--zenora-row-hover); }
         .table td { border-color: rgba(231, 220, 203, .55); vertical-align: middle; }
 
         /* ───────────────────────── Badges ───────────────────────── */
@@ -391,8 +399,8 @@
             border-color: #D9CDB8;
         }
         .btn-outline-primary:hover {
-            background: var(--zenora-ink);
-            border-color: var(--zenora-ink);
+            background: var(--bs-primary);
+            border-color: var(--bs-primary);
             color: #fff;
         }
         .btn-outline-danger { color: #B3261E; border-color: #E5C4C0; }
@@ -401,20 +409,20 @@
 
         /* ───────────────────────── Forms ───────────────────────── */
         .form-control, .form-select {
-            border-color: #DCCFB6;
+            border-color: var(--zenora-input-border);
             border-radius: .6rem;
-            background-color: #fff;
+            background-color: var(--zenora-input-bg);
         }
         .form-control:focus, .form-select:focus {
             border-color: var(--zenora-amber);
             box-shadow: 0 0 0 .22rem rgba(180, 83, 9, .14);
         }
-        .form-label { font-weight: 600; font-size: .8rem; color: #57534E; }
-        .input-group-text { border-color: #DCCFB6; background: #F6F0E4; color: #57534E; }
+        .form-label { font-weight: 600; font-size: .8rem; color: var(--zenora-ink-soft); }
+        .input-group-text { border-color: var(--zenora-input-border); background: var(--zenora-surface-sunken); color: var(--zenora-ink-soft); }
 
         /* ───────────────────────── Alerts / toasts / progress ───────────────────────── */
         .alert { border-radius: .8rem; border-color: var(--zenora-border); }
-        .progress { background: #EDE3D0; border-radius: 999px; }
+        .progress { background: var(--zenora-progress-track); border-radius: 999px; }
         .progress-bar {
             background: linear-gradient(90deg, var(--zenora-amber), #D97706);
             border-radius: 999px;
@@ -425,8 +433,8 @@
         .pagination { --bs-pagination-border-radius: .55rem; --bs-pagination-color: #57534E; }
         .pagination .page-link { border-color: var(--zenora-border); }
         .pagination .page-item.active .page-link {
-            background: var(--zenora-ink);
-            border-color: var(--zenora-ink);
+            background: var(--bs-primary);
+            border-color: var(--bs-primary);
             color: #fff;
         }
         .dropdown-menu {
@@ -437,7 +445,7 @@
 
         /* ───────────────────────── Notification bell ───────────────────────── */
         #adminBell {
-            background: #fff;
+            background: var(--zenora-surface-sunken);
             border: 1px solid var(--zenora-border);
             color: var(--zenora-ink);
             box-shadow: 0 4px 14px -8px rgba(28, 25, 23, .35);
@@ -460,7 +468,116 @@
         @media (min-width: 992px) {
             .topbar-mobile { display: none !important; }
         }
+
+        /* ── Dark mode: Zenora charcoal variant ── */
+        [data-bs-theme="dark"] {
+            --zenora-cream: #15110E;
+            --zenora-cream-soft: #1C1713;
+            --zenora-ink: #F5EFE6;
+            --zenora-ink-soft: #B8B1A6;
+            --zenora-amber-soft: rgba(180, 83, 9, .2);
+            --zenora-border: #38302A;
+            --zenora-surface: #211B16;
+            --zenora-surface-sunken: #2C241D;
+            --zenora-row-hover: rgba(180, 83, 9, .09);
+            --zenora-input-bg: #1A1512;
+            --zenora-input-border: #4A3D31;
+            --zenora-progress-track: #342B23;
+
+            --bs-body-bg: var(--zenora-cream);
+            --bs-body-color: #EDE6DA;
+            --bs-body-color-rgb: 237, 230, 218;
+            --bs-secondary-color: #A8A29E;
+            --bs-secondary-color-rgb: 168, 162, 158;
+            --bs-tertiary-color: #78716C;
+            --bs-primary: var(--zenora-amber);
+            --bs-primary-rgb: 180, 83, 9;
+            --bs-primary-text-emphasis: #F0B26B;
+            --bs-primary-bg-subtle: rgba(180, 83, 9, .18);
+            --bs-border-color: var(--zenora-border);
+            --bs-link-color: #E0A14B;
+            --bs-link-color-rgb: 224, 161, 75;
+            --bs-link-hover-color: #F0B26B;
+            --bs-link-hover-color-rgb: 240, 178, 107;
+            --bs-focus-ring-color: rgba(217, 119, 6, .4);
+        }
+        [data-bs-theme="dark"] body {
+            background:
+                radial-gradient(1200px 500px at 85% -10%, rgba(180, 83, 9, .12), transparent 60%),
+                radial-gradient(900px 420px at -10% 110%, rgba(139, 111, 71, .08), transparent 60%),
+                var(--zenora-cream);
+        }
+        [data-bs-theme="dark"] .stat-card .stat-icon {
+            background: linear-gradient(135deg, #8B6F47, #B08D5F);
+        }
+        [data-bs-theme="dark"] .btn-primary:hover,
+        [data-bs-theme="dark"] .btn-primary:focus {
+            background: var(--zenora-amber-deep);
+            border-color: var(--zenora-amber-deep);
+        }
+        [data-bs-theme="dark"] .btn-outline-secondary {
+            color: #B8B1A6;
+            border-color: #4A3D31;
+        }
+        [data-bs-theme="dark"] .btn-outline-secondary:hover {
+            background: #2C241D;
+            border-color: #5A4B3C;
+            color: #EDE6DA;
+        }
+        [data-bs-theme="dark"] .btn-outline-primary {
+            color: #E0A14B;
+            border-color: #5A4B3C;
+        }
+        [data-bs-theme="dark"] .btn-outline-danger {
+            color: #E79A92;
+            border-color: #6E3A34;
+        }
+        [data-bs-theme="dark"] .form-control:focus,
+        [data-bs-theme="dark"] .form-select:focus {
+            border-color: var(--zenora-amber);
+            box-shadow: 0 0 0 .22rem rgba(217, 119, 6, .18);
+        }
+        [data-bs-theme="dark"] .pagination {
+            --bs-pagination-bg: var(--zenora-surface);
+            --bs-pagination-border-color: var(--zenora-border);
+            --bs-pagination-hover-bg: var(--zenora-surface-sunken);
+            --bs-pagination-hover-border-color: var(--zenora-border);
+            --bs-pagination-color: #B8B1A6;
+            --bs-pagination-disabled-bg: var(--zenora-surface);
+        }
+        [data-bs-theme="dark"] .table {
+            --bs-table-hover-bg: var(--zenora-row-hover);
+            --bs-table-color: #EDE6DA;
+        }
+        [data-bs-theme="dark"] .toast {
+            --bs-toast-bg: #241E19;
+            --bs-toast-header-bg: #2C241D;
+        }
+
+        .theme-toggle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+        }
+        [data-bs-theme="dark"] .theme-toggle.btn-outline-light {
+            border-color: rgba(255, 255, 255, .28);
+        }
     </style>
+    <script>
+        // Apply the saved/system dark-mode preference before first paint (no flash).
+        (function () {
+            try {
+                var t = localStorage.getItem('zenora-admin-theme');
+                if (t !== 'dark' && t !== 'light') {
+                    t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+                document.documentElement.setAttribute('data-bs-theme', t);
+            } catch (e) {
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+            }
+        })();
+    </script>
 </head>
 <body>
     @php
@@ -530,6 +647,10 @@
         @endif
 
         <div class="logout">
+            <button type="button" class="btn btn-outline-light w-100 mb-2 theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                <i class="bi bi-moon-stars-fill" id="themeToggleIcon"></i>
+                <span id="themeToggleLabel">Dark</span>
+            </button>
             <form action="{{ route('admin.logout') }}" method="POST">
                 @csrf
                 <button type="submit" class="btn btn-outline-light w-100">
@@ -545,7 +666,10 @@
             <i class="bi bi-list fs-5"></i>
         </button>
         <span class="topbar-brand"><i class="bi bi-bag-heart-fill"></i> Zenora Admin</span>
-        <div class="ms-auto">
+        <div class="ms-auto d-flex align-items-center gap-2">
+            <button class="btn-menu" type="button" id="themeToggleMobile" aria-label="Toggle dark mode" title="Toggle dark mode">
+                <i class="bi bi-moon-stars-fill" id="themeToggleIconMobile"></i>
+            </button>
             <div class="dropdown">
                 <button class="btn btn-menu position-relative" type="button" id="adminBellMobile" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
                     <i class="bi bi-bell"></i>
@@ -586,7 +710,7 @@
                 >0</span>
             </button>
             <div class="dropdown-menu dropdown-menu-end p-0 shadow-lg" style="width: 360px; max-height: 480px; overflow-y: auto;" aria-labelledby="adminBell">
-                <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom bg-light">
+                <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom bg-body-tertiary">
                     <span class="fw-semibold">Notifications</span>
                     <button class="btn btn-sm btn-link p-0 text-decoration-none" type="button" id="markAllReadBtn">Mark all read</button>
                 </div>
@@ -611,6 +735,58 @@
                 }
             });
         });
+
+        // ---- Dark mode toggle (persisted per browser) ----
+        const themeToggle = document.getElementById('themeToggle');
+        const themeToggleIcon = document.getElementById('themeToggleIcon');
+        const themeToggleLabel = document.getElementById('themeToggleLabel');
+        const themeToggleMobile = document.getElementById('themeToggleMobile');
+        const themeToggleIconMobile = document.getElementById('themeToggleIconMobile');
+
+        function zenoraCurrentTheme() {
+            return document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'dark' : 'light';
+        }
+
+        function zenoraApplyTheme(theme, persist) {
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            document.documentElement.style.colorScheme = theme;
+            const dark = theme === 'dark';
+            const icon = dark ? 'bi-sun-fill' : 'bi-moon-stars-fill';
+            if (themeToggleIcon) themeToggleIcon.className = 'bi ' + icon;
+            if (themeToggleIconMobile) themeToggleIconMobile.className = 'bi ' + icon;
+            if (themeToggleLabel) themeToggleLabel.textContent = dark ? 'Light' : 'Dark';
+            if (persist) {
+                try { localStorage.setItem('zenora-admin-theme', theme); } catch (e) {}
+            }
+            // Let page scripts (e.g. dashboard charts) re-style instantly.
+            window.dispatchEvent(new CustomEvent('zenora-theme-change', { detail: theme }));
+        }
+
+        function zenoraToggleTheme() {
+            zenoraApplyTheme(zenoraCurrentTheme() === 'dark' ? 'light' : 'dark', true);
+        }
+
+        if (themeToggle) themeToggle.addEventListener('click', zenoraToggleTheme);
+        if (themeToggleMobile) themeToggleMobile.addEventListener('click', zenoraToggleTheme);
+
+        // Follow the OS theme live, but only while the admin hasn't chosen
+        // explicitly (a saved preference always wins).
+        if (window.matchMedia) {
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+                let saved = null;
+                try { saved = localStorage.getItem('zenora-admin-theme'); } catch (err) {}
+                if (!saved) zenoraApplyTheme(e.matches ? 'dark' : 'light', false);
+            });
+        }
+
+        // Keep the toggle UI in sync with the pre-paint preference (no event —
+        // page scripts read the data-bs-theme attribute when they initialise).
+        if (themeToggleIcon || themeToggleIconMobile || themeToggleLabel) {
+            const dark = zenoraCurrentTheme() === 'dark';
+            if (themeToggleIcon) themeToggleIcon.className = 'bi ' + (dark ? 'bi-sun-fill' : 'bi-moon-stars-fill');
+            if (themeToggleIconMobile) themeToggleIconMobile.className = 'bi ' + (dark ? 'bi-sun-fill' : 'bi-moon-stars-fill');
+            if (themeToggleLabel) themeToggleLabel.textContent = dark ? 'Light' : 'Dark';
+        }
 
         function setLoading(btn, loading) {
             if (!btn) return;

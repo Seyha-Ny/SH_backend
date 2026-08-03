@@ -42,9 +42,9 @@
                     <tr>
                         <td>
                             @if ($product->image)
-                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" style="width: 48px; height: 48px; object-fit: cover; border-radius: .375rem; border: 1px solid #e9ecef;">
+                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" style="width: 48px; height: 48px; object-fit: cover; border-radius: .375rem; border: 1px solid var(--zenora-border);">
                             @else
-                                <div style="width: 48px; height: 48px; background: #e9ecef; border-radius: .375rem;"></div>
+                                <div style="width: 48px; height: 48px; background: var(--zenora-surface-sunken); border-radius: .375rem;"></div>
                             @endif
                         </td>
                         <td class="fw-medium">{{ $product->name }}</td>
@@ -57,7 +57,7 @@
                                 $status = match($product->status) {
                                     'active' => 'bg-success-subtle text-success',
                                     'inactive' => 'bg-secondary-subtle text-secondary',
-                                    default => 'bg-light text-dark',
+                                    default => 'bg-secondary-subtle text-secondary',
                                 };
                             @endphp
                             <span class="badge badge-status {{ $status }}">{{ $product->status ?? 'inactive' }}</span>

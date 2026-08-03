@@ -100,7 +100,7 @@
                             <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image" accept="image/*">
                             @if ($product->image)
                                 <div class="mt-2">
-                                    <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" style="max-width: 160px; border-radius: .5rem; border: 1px solid #e9ecef;">
+                                    <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" style="max-width: 160px; border-radius: .5rem; border: 1px solid var(--zenora-border);">
                                 </div>
                             @endif
                             @error('image')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
