@@ -61,12 +61,18 @@ Route::post('payment/stripe-webhook', [PaymentController::class, 'stripeWebhook'
 Route::post('coupons/validate', [CouponController::class, 'validate'])->middleware('throttle:30,1');
 
 // ── Auth routes (heavily rate-limited to prevent brute-force) ──
+// login/logout carry the session-only middleware group: the same storefront
+// form signs in both roles, and the session lets admins reach /admin right
+// after (customers only get the bearer token, as before).
 Route::post('register', [AuthController::class, 'register'])->middleware('throttle:5,1');
-Route::post('login', [AuthController::class, 'login'])->middleware('throttle:5,1');
-Route::post('logout', [AuthController::class, 'logout'])->middleware('throttle:30,1');
-Route::post('auth/social/callback', [AuthController::class, 'socialCallback'])->middleware('throttle:10,1');
-Route::get('user', [AuthController::class, 'user'])->middleware('throttle:60,1');
-Route::get('me', [AuthController::class, 'user'])->middleware('throttle:60,1');
+Route::post('login', [AuthController::class, 'login'])->middleware(['session-only', 'throttle:5,1']);
+Route::post('logout', [AuthController::class, 'logout'])->middleware(['session-only', 'throttle:30,1']);
+Route::post('auth/social/callback', [AuthController::class, 'socialCallback'])->middleware(['session-only', 'throttle:10,1']);
+// /me and /user resolve the current user from the bearer token — they must be
+// protected like every other private endpoint, otherwise $request->user() falls
+// back to the web guard and returns 401 for valid API tokens.
+Route::get('user', [AuthController::class, 'user'])->middleware(['auth:sanctum', 'throttle:60,1']);
+Route::get('me', [AuthController::class, 'user'])->middleware(['auth:sanctum', 'throttle:60,1']);
 
 // ── Profile (private, user-specific) ──
 Route::get('profile', [ProfileController::class, 'show'])->middleware(['auth:sanctum', 'throttle:60,1', 'cache:private,30']);

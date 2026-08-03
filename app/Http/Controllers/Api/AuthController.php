@@ -9,6 +9,7 @@ use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
@@ -113,10 +114,32 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // Unified authentication: the same storefront form signs in both
+        // customers and admins. We ALSO log the user into the web guard (when
+        // a session exists) so admins can open the /admin panel directly
+        // afterwards without a separate login page. Pure API clients (no
+        // session) are unaffected — they keep using the bearer token only.
+        $this->signInWebSessionIfAdmin($user, $request);
+
         return response()->json([
             'user' => $user,
             'token' => $token,
         ]);
+    }
+
+    /**
+     * Establish the web session for admins signed in through the storefront
+     * form, so the /admin panel recognizes them without a separate login.
+     */
+    private function signInWebSessionIfAdmin(User $user, Request $request): void
+    {
+        if ($user->is_admin
+            && in_array($user->role, ['admin', 'super_admin'], true)
+            && $request->hasSession()
+        ) {
+            Auth::guard('web')->login($user);
+            $request->session()->regenerate();
+        }
     }
 
     /**
@@ -143,6 +166,14 @@ class AuthController extends Controller
             $user->currentAccessToken()?->delete();
         }
 
+        // Mirror the unified login: also end the web session (admin panel
+        // access) when one was established by the same storefront form.
+        if ($request->hasSession()) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
+
         return response()->json(['message' => 'Logged out successfully']);
     }
 
@@ -154,12 +185,15 @@ class AuthController extends Controller
      *     security={{"sanctum":{}}},
      *     @OA\Response(
      *         response=200,
-     *         description="User data",
+     *         description="The full authenticated user model (same shape as the login response)",
      *         @OA\JsonContent(
      *             @OA\Property(property="id", type="integer", example=1),
      *             @OA\Property(property="name", type="string", example="John Doe"),
      *             @OA\Property(property="email", type="string", format="email", example="john@example.com"),
      *             @OA\Property(property="is_admin", type="boolean", example=false),
+     *             @OA\Property(property="role", type="string", example="customer"),
+     *             @OA\Property(property="avatar", type="string", nullable=true),
+     *             @OA\Property(property="telegram_chat_id", type="string", nullable=true),
      *             @OA\Property(property="email_verified_at", type="string", format="date-time", example="2024-01-01T00:00:00Z", nullable=true)
      *         )
      *     ),
@@ -178,20 +212,23 @@ class AuthController extends Controller
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        return response()->json([
-            'id' => $user->getKey(),
-            'name' => $user->name,
-            'email' => $user->email,
-            'is_admin' => (bool) $user->is_admin,
-            'email_verified_at' => $user->email_verified_at,
-            'role' => $user->role,
-        ]);
+        // Return the full user model (same shape as the login/register
+        // response) so the storefront keeps fields like avatar and
+        // telegram_chat_id when fetchUser() refreshes the session.
+        return response()->json($user);
     }
 
     public function socialCallback(Request $request): JsonResponse
     {
         try {
             $data = (new SocialLoginAction())->handle($request);
+
+            // Unified authentication: social login goes through the same
+            // storefront form, so admins get the web session too.
+            $user = User::find($data['user']['id'] ?? null);
+            if ($user) {
+                $this->signInWebSessionIfAdmin($user, $request);
+            }
 
             return response()->json([
                 'token' => $data['token'],
