@@ -4,7 +4,10 @@
 
 @section('content')
     <div class="page-header">
-        <h1 class="h3 mb-0">Categories</h1>
+        <div>
+            <h1 class="h3 mb-0">Categories</h1>
+            <div class="page-subtitle">Organize your product catalog</div>
+        </div>
         <a href="{{ route('admin.categories.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg"></i> New Category
         </a>

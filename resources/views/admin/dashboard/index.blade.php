@@ -38,6 +38,7 @@
     <div class="row g-3 mb-4">
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="stat-card">
+                <div class="stat-icon amber"><i class="bi bi-box-seam"></i></div>
                 <div class="label">Total Products</div>
                 <div class="value">{{ $stats['products'] }}</div>
                 <div class="quick-action"><a href="{{ route('admin.products.create') }}">+ Add Product</a></div>
@@ -45,6 +46,7 @@
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="stat-card">
+                <div class="stat-icon gold"><i class="bi bi-folder2-open"></i></div>
                 <div class="label">Total Categories</div>
                 <div class="value">{{ $stats['categories'] }}</div>
                 <div class="quick-action"><a href="{{ route('admin.categories.index') }}">Manage Categories</a></div>
@@ -52,6 +54,7 @@
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="stat-card">
+                <div class="stat-icon indigo"><i class="bi bi-receipt"></i></div>
                 <div class="label">Total Orders</div>
                 <div class="value">{{ $stats['orders'] }}</div>
                 @php
@@ -71,6 +74,7 @@
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="stat-card">
+                <div class="stat-icon green"><i class="bi bi-people"></i></div>
                 <div class="label">Total Users</div>
                 <div class="value">{{ $stats['users'] }}</div>
                 @php
@@ -90,6 +94,7 @@
         </div>
         <div class="col-12 col-sm-6 col-xl-3">
             <div class="stat-card">
+                <div class="stat-icon"><i class="bi bi-currency-dollar"></i></div>
                 <div class="label">Total Revenue</div>
                 <div class="value text-success">${{ number_format($stats['revenue'], 2) }}</div>
                 @php
@@ -475,11 +480,12 @@
                     datasets: [{
                         data: values,
                         backgroundColor: [
-                            '#f59f00',
-                            '#198754',
-                            '#dc3545',
-                            '#6c757d',
-                            '#0f3460',
+                            '#D97706',
+                            '#2F8F5B',
+                            '#DC4C3E',
+                            '#A8A29E',
+                            '#1C1917',
+                            '#8B6F47',
                         ],
                     }],
                 },
@@ -505,7 +511,8 @@
                     datasets: [{
                         label: 'Orders',
                         data: weeklyValues,
-                        backgroundColor: '#4f46e5',
+                        backgroundColor: '#D97706',
+                        borderRadius: 6,
                     }],
                 },
                 options: {
@@ -533,12 +540,12 @@
                     datasets: [{
                         label: 'Revenue',
                         data: revenueValues,
-                        borderColor: '#2563eb',
-                        backgroundColor: 'rgba(37,99,235,0.1)',
+                        borderColor: '#1C1917',
+                        backgroundColor: 'rgba(180, 83, 9, 0.12)',
                         fill: true,
                         tension: 0.35,
                         pointBackgroundColor: '#ffffff',
-                        pointBorderColor: '#2563eb',
+                        pointBorderColor: '#B45309',
                         pointBorderWidth: 2,
                     }],
                 },

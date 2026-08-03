@@ -4,7 +4,10 @@
 
 @section('content')
     <div class="page-header">
-        <h1 class="h3 mb-0">Coupons</h1>
+        <div>
+            <h1 class="h3 mb-0">Coupons</h1>
+            <div class="page-subtitle">Create and manage discount codes</div>
+        </div>
         <a href="{{ route('admin.coupons.create') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg"></i> Add Coupon
         </a>

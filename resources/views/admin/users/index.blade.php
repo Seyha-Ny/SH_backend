@@ -3,53 +3,62 @@
 @section('title', 'Users')
 
 @section('content')
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
-        <h1 style="font-size: 1.5rem; font-weight: 700;">Users</h1>
+    <div class="page-header">
+        <div>
+            <h1 class="h3 mb-0">Users</h1>
+            <div class="page-subtitle">Manage customer accounts and staff</div>
+        </div>
     </div>
 
     @if (session('status'))
-        <div style="margin-bottom: 1rem; padding: 0.75rem; background: #dcfce7; border: 1px solid #bbf7d0; color: #166534; border-radius: 0.375rem;">
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('status') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
-    <div class="card" style="padding: 0; overflow: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Admin</th>
-                    <th>Role</th>
-                    <th>Joined</th>
-                    <th style="width: 240px;">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-            @forelse ($users as $user)
-                <tr>
-                    <td>{{ $user->name }}</td>
-                    <td>{{ $user->email }}</td>
-                    <td>{{ $user->is_admin ? 'Yes' : 'No' }}</td>
-                    <td>{{ $user->role ? ucfirst(str_replace('_', ' ', $user->role)) : '-' }}</td>
-                    <td>{{ $user->created_at->format('Y-m-d') }}</td>
-                    <td style="display: flex; gap: 0.5rem;">
-                        <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-primary" style="width: auto;">Edit</a>
-                        <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="return confirm('Delete this user? This cannot be undone.');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" name="confirm" value="1" class="btn btn-danger" style="width: auto;">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            @empty
-                <tr><td colspan="6" style="text-align: center;">No users found.</td></tr>
-            @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    <div style="margin-top: 1rem;">
-        {{ $users->links() }}
+    <div class="table-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Joined</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @forelse ($users as $user)
+                    <tr>
+                        <td class="fw-medium">{{ $user->name }}</td>
+                        <td class="text-muted">{{ $user->email }}</td>
+                        <td>
+                            @if ($user->is_admin)
+                                <span class="badge badge-status bg-primary-subtle text-primary">Admin</span>
+                            @else
+                                <span class="badge badge-status bg-secondary-subtle text-secondary">{{ $user->role ? ucfirst(str_replace('_', ' ', $user->role)) : 'Customer' }}</span>
+                            @endif
+                        </td>
+                        <td class="text-muted">{{ $user->created_at->format('Y-m-d') }}</td>
+                        <td class="text-end">
+                            <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            <form method="POST" action="{{ route('admin.users.destroy', $user) }}" class="d-inline" onsubmit="return confirm('Delete this user? This cannot be undone.');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" name="confirm" value="1" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="5" class="text-center py-4 text-muted">No users found.</td></tr>
+                @endforelse
+                </tbody>
+            </table>
+        </div>
+        @if (method_exists($users, 'links'))
+            <div class="p-3 border-top">{{ $users->links() }}</div>
+        @endif
     </div>
 @endsection

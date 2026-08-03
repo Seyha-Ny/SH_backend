@@ -4,7 +4,10 @@
 
 @section('content')
     <div class="page-header">
-        <h1 class="h3 mb-0">Orders</h1>
+        <div>
+            <h1 class="h3 mb-0">Orders</h1>
+            <div class="page-subtitle">Track and manage customer orders</div>
+        </div>
     </div>
 
     <div class="table-card">

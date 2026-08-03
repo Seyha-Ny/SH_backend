@@ -4,13 +4,18 @@
 
 @section('content')
     <div class="page-header">
-        <h1 class="h3 mb-0">Products</h1>
-        <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-lg"></i> New Product
-        </a>
-        <a href="{{ route('admin.products.export') }}" class="btn btn-outline-primary">
-            Export CSV
-        </a>
+        <div>
+            <h1 class="h3 mb-0">Products</h1>
+            <div class="page-subtitle">Manage your product catalog</div>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ route('admin.products.export') }}" class="btn btn-outline-primary">
+                <i class="bi bi-download"></i> Export CSV
+            </a>
+            <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> New Product
+            </a>
+        </div>
     </div>
 
     @if (session('status'))
