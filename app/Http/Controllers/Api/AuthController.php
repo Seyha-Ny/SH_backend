@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\PersonalAccessToken;
 use OpenApi\Annotations as OA;
 
 class AuthController extends Controller
@@ -160,14 +161,19 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $user = $request->user('sanctum');
-
-        if ($user) {
-            $user->currentAccessToken()?->delete();
+        // Revoke the real bearer token when one was sent. The Sanctum guard
+        // prefers the web session (unified login) over the bearer token, in
+        // which case currentAccessToken() is a TransientToken that must not be
+        // deleted — so look the token up directly instead. A missing or stale
+        // token is simply a no-op.
+        if ($token = $request->bearerToken()) {
+            PersonalAccessToken::findToken($token)?->delete();
         }
 
         // Mirror the unified login: also end the web session (admin panel
-        // access) when one was established by the same storefront form.
+        // access) when one was established by the same storefront form. Safe
+        // to run even when the session is already gone (expired or already
+        // logged out) — logout must always succeed gracefully.
         if ($request->hasSession()) {
             Auth::guard('web')->logout();
             $request->session()->invalidate();

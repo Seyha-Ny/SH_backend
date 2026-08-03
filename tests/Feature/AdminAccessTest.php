@@ -271,4 +271,38 @@ class AdminAccessTest extends TestCase
             ->get('/admin/dashboard')
             ->assertRedirect('/auth');
     }
+
+    public function test_api_logout_with_session_and_bearer_token_revokes_token_and_invalidates_session(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true, 'role' => 'admin']);
+        $token = $admin->createToken('test')->plainTextToken;
+
+        // A unified-login request carries BOTH the web session (which Sanctum's
+        // guard prefers) and a bearer token. The old code called
+        // currentAccessToken()->delete() on the session-resolved user — a
+        // TransientToken — which threw and 500'd every SPA logout. It must
+        // now return 200, revoke the real token, and end the web session.
+        $this->actingAs($admin)
+            ->withToken($token)
+            ->postJson('/api/logout')
+            ->assertOk()
+            ->assertJson(['message' => 'Logged out successfully']);
+
+        // The web session (admin panel access) is ended...
+        $this->assertGuest('web');
+
+        // ...and the real bearer token row is revoked.
+        $this->assertDatabaseMissing('personal_access_tokens', [
+            'token' => hash('sha256', $token),
+        ]);
+    }
+
+    public function test_api_logout_when_already_logged_out_returns_200(): void
+    {
+        // Expired or already-logged-out sessions must be a graceful no-op, not
+        // a 401/500 — the storefront relies on logout always succeeding.
+        $this->postJson('/api/logout')
+            ->assertOk()
+            ->assertJson(['message' => 'Logged out successfully']);
+    }
 }

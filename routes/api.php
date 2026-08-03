@@ -65,7 +65,10 @@ Route::post('coupons/validate', [CouponController::class, 'validate'])->middlewa
 // form signs in both roles, and the session lets admins reach /admin right
 // after (customers only get the bearer token, as before).
 Route::post('register', [AuthController::class, 'register'])->middleware('throttle:5,1');
-Route::post('login', [AuthController::class, 'login'])->middleware(['session-only', 'throttle:5,1']);
+// Named per-email limiter (see AppServiceProvider) — 10 attempts/min per
+// account instead of a shared IP bucket, so retries and the e2e suite don't
+// lock each other out.
+Route::post('login', [AuthController::class, 'login'])->middleware(['session-only', 'throttle:login']);
 Route::post('logout', [AuthController::class, 'logout'])->middleware(['session-only', 'throttle:30,1']);
 Route::post('auth/social/callback', [AuthController::class, 'socialCallback'])->middleware(['session-only', 'throttle:10,1']);
 // /me and /user resolve the current user from the bearer token — they must be
