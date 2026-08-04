@@ -187,10 +187,11 @@
         }
         .sidebar .nav a.active,
         .sidebar .nav .nav-link.active {
-            background: linear-gradient(90deg, rgba(180, 83, 9, .32), rgba(180, 83, 9, .1));
+            background: linear-gradient(90deg, rgba(217, 119, 6, .52), rgba(180, 83, 9, .16));
             color: #fff;
-            border-color: rgba(240, 226, 200, .22);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 6px 18px -8px rgba(0, 0, 0, .6);
+            font-weight: 700;
+            border-color: rgba(240, 226, 200, .3);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 6px 18px -8px rgba(0, 0, 0, .6);
         }
         .sidebar .nav a.active::before,
         .sidebar .nav .nav-link.active::before {
