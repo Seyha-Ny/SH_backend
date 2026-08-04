@@ -101,29 +101,26 @@
         }
         .brand-text {
             font-family: var(--zenora-font-serif);
-            font-weight: 800;
-            font-size: 1.02rem;
-            letter-spacing: .16em;
+            font-weight: 900;
+            font-size: 1.05rem;
+            letter-spacing: .08em;
             text-transform: uppercase;
             line-height: 1;
             color: #F5EFE6;
         }
+        /* Plain crown mark — same as the storefront Logo.vue, no tile. */
         .brand-mark {
-            width: 38px;
-            height: 38px;
-            border-radius: .75rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.15rem;
-            color: #fff;
-            background: linear-gradient(135deg, var(--zenora-amber), #D97706);
-            box-shadow: 0 6px 16px -6px rgba(217, 119, 6, .55);
+            line-height: 0;
+            color: #F5EFE6;
             flex-shrink: 0;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .45));
         }
         .brand-mark svg {
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
             flex-shrink: 0;
         }
         .sidebar .nav {
@@ -377,15 +374,15 @@
         .topbar-mobile .btn-menu:hover { background: rgba(255, 255, 255, .14); }
         .topbar-mobile .topbar-brand {
             font-family: var(--zenora-font-serif);
-            font-weight: 800;
+            font-weight: 900;
             display: flex;
             align-items: center;
             gap: .55rem;
             font-size: .98rem;
-            letter-spacing: .12em;
+            letter-spacing: .08em;
             text-transform: uppercase;
         }
-        .topbar-mobile .topbar-brand svg { color: #D97706; flex-shrink: 0; }
+        .topbar-mobile .topbar-brand svg { color: #F5EFE6; flex-shrink: 0; }
 
         /* ───────────────────────── Main area ───────────────────────── */
         .main {
@@ -835,7 +832,7 @@
         @media (min-width: 992px) and (max-width: 1199.98px) {
             .sidebar { width: 232px; }
             .main { margin-left: 232px; padding-left: 1.4rem; padding-right: 1.4rem; }
-            .brand-mark { width: 34px; height: 34px; font-size: 1rem; }
+            .brand-mark svg { width: 22px; height: 22px; }
             .admin-avatar { width: 34px; height: 34px; font-size: .85rem; }
             .sidebar-toggle { left: 219px; }
             [data-sidebar="collapsed"] .sidebar { width: 72px; }
@@ -988,36 +985,36 @@
             </a>
 
             <div class="nav-heading">Products</div>
-            <a href="{{ route('admin.products.index') }}" class="nav-link {{ ($currentRoute === 'products.index' || $currentRoute === 'products.create' || $currentRoute === 'products.edit') ? 'active' : '' }}" title="All Products">
+            <a href="{{ route('admin.products.index') }}" class="nav-link {{ ($currentRoute === 'admin.products.index' || $currentRoute === 'admin.products.edit') ? 'active' : '' }}" title="All Products">
                 <i class="bi bi-box-seam"></i> <span class="nav-label">All Products</span>
             </a>
-            <a href="{{ route('admin.products.create') }}" class="nav-link {{ ($currentRoute === 'products.create') ? 'active' : '' }}" title="Add New">
+            <a href="{{ route('admin.products.create') }}" class="nav-link {{ ($currentRoute === 'admin.products.create') ? 'active' : '' }}" title="Add New">
                 <i class="bi bi-plus-lg"></i> <span class="nav-label">Add New</span>
             </a>
-            <a href="{{ route('admin.reviews.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'reviews')) ? 'active' : '' }}" title="Reviews">
+            <a href="{{ route('admin.reviews.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'admin.reviews')) ? 'active' : '' }}" title="Reviews">
                 <i class="bi bi-chat-dots"></i> <span class="nav-label">Reviews</span>
             </a>
-            <a href="{{ route('admin.categories.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'categories')) ? 'active' : '' }}" title="Categories">
+            <a href="{{ route('admin.categories.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'admin.categories')) ? 'active' : '' }}" title="Categories">
                 <i class="bi bi-folder2"></i> <span class="nav-label">Categories</span>
             </a>
 
             <div class="nav-heading">Orders</div>
-            <a href="{{ route('admin.orders.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'orders')) ? 'active' : '' }}" title="All Orders">
+            <a href="{{ route('admin.orders.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'admin.orders')) ? 'active' : '' }}" title="All Orders">
                 <i class="bi bi-receipt"></i> <span class="nav-label">All Orders</span>
             </a>
 
             <div class="nav-heading">Settings</div>
-            <a href="{{ route('admin.shipping-methods.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'shipping-methods')) ? 'active' : '' }}" title="Shipping Methods">
+            <a href="{{ route('admin.shipping-methods.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'admin.shipping-methods')) ? 'active' : '' }}" title="Shipping Methods">
                 <i class="bi bi-truck"></i> <span class="nav-label">Shipping Methods</span>
             </a>
 
             <div class="nav-heading">Customers</div>
-            <a href="{{ route('admin.users.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'users')) ? 'active' : '' }}" title="Users">
+            <a href="{{ route('admin.users.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'admin.users')) ? 'active' : '' }}" title="Users">
                 <i class="bi bi-people"></i> <span class="nav-label">Users</span>
             </a>
 
             <div class="nav-heading">Marketing</div>
-            <a href="{{ route('admin.coupons.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'coupons')) ? 'active' : '' }}" title="Coupons">
+            <a href="{{ route('admin.coupons.index') }}" class="nav-link {{ (str_starts_with($currentRoute, 'admin.coupons')) ? 'active' : '' }}" title="Coupons">
                 <i class="bi bi-ticket-perforated"></i> <span class="nav-label">Coupons</span>
             </a>
         </div>
